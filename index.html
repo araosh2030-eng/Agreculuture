@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agriculture - منصة الزراعة الذكية الرقمية</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Playfair+Display:ital,wght@1,600;1,700;1,800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'main-bg': '#F5F2EA',
+                        'sidebar-bg': '#ECE8DC',
+                        'card-bg': '#F1ECE1',
+                        'accent-green': '#314731',
+                        'hover-green': '#233423',
+                        'muted-text': '#5A695A',
+                        'border-color': '#DFD9C9',
+                        'card-border': '#E5E0D2',
+                        'active-bg': '#DFDACB',
+                    },
+                    fontFamily: {
+                        'tajawal': ['Tajawal', 'sans-serif'],
+                        'serif-brand': ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #F5F2EA;
+            color: #233423;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #ECE8DC;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #B8B09D;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #314731;
+        }
+
+        .brand-title {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 10px rgba(255,255,255,0.7), 0 1px 3px rgba(49,71,49,0.3);
+        }
+
+        .hero-banner {
+            background-image: linear-gradient(to bottom, rgba(245, 242, 234, 0.25), rgba(245, 242, 234, 0.95)), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center top;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .accordion-content.open {
+            max-height: 300px;
+        }
+
+        .rotate-chevron {
+            transform: rotate(180deg);
+            transition: transform 0.2s ease;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.35s ease-in-out;
+        }
+
+        /* Styling Active Sidebar Items */
+        .sidebar-item-active {
+            background-color: #DFDACB !important;
+            font-weight: 800 !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row antialiased select-none relative">
+
+    <!-- Sidebar / القائمة الجانبية -->
+    <aside class="w-full md:w-72 bg-sidebar-bg border-l border-border-color p-5 flex flex-col justify-between shrink-0 sticky top-0 h-auto md:h-screen z-20 shadow-sm relative overflow-hidden">
+        
+        <div class="absolute -top-10 -right-10 w-36 h-36 pointer-events-none opacity-20">
+            <i class="fa-solid fa-plant-wilt text-7xl text-accent-green"></i>
+        </div>
+
+        <div>
+            <!-- Sidebar Header & Title -->
+            <div class="flex items-center justify-between md:mb-6">
+                <div class="flex items-center gap-2.5 text-accent-green font-bold text-lg cursor-pointer hover:opacity-80 transition" onclick="switchTab('home')">
+                    <div class="w-8 h-8 rounded-full bg-accent-green/10 flex items-center justify-center">
+                        <i class="fa-solid fa-leaf text-accent-green text-base"></i>
+                    </div>
+                    <span>الزراعة الرقمية</span>
+                </div>
+            </div>
+
+            <!-- Navigation Links Accordion Group -->
+            <nav class="space-y-2 mt-4 md:mt-0">
+                
+                <!-- 1. اقتراحات -->
+                <div class="nav-item">
+                    <button onclick="toggleAccordion('acc-suggestions', 'chevron-1')" class="w-full flex items-center justify-between text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-seedling text-accent-green text-sm w-4"></i>
+                            <span>اقتراحات</span>
+                        </div>
+                        <i id="chevron-1" class="fa-solid fa-chevron-down text-xs text-muted-text transition-transform duration-200"></i>
+                    </button>
+                    <div id="acc-suggestions" class="accordion-content pr-9 space-y-1 text-xs text-muted-text pt-1">
+                        <a href="#" onclick="switchTab('suggestions-easy'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
+                            <i class="fa-solid fa-sprout text-[10px]"></i> نباتات سهلة الزراعة
+                        </a>
+                        <a href="#" onclick="switchTab('suggestions-shade'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
+                            <i class="fa-solid fa-tree text-[10px]"></i> نباتات ظل
+                        </a>
+                        <a href="#" onclick="switchTab('suggestions-aromatic'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
+                            <i class="fa-solid fa-fan text-[10px]"></i> نباتات معطرة
+                        </a>
+                        <a href="#" onclick="switchTab('suggestions-basics'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
+                            <i class="fa-solid fa-book text-[10px]"></i> أساسيات الزراعة
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 2. المتجر الزراعي -->
+                <div class="nav-item">
+                    <button onclick="toggleAccordion('acc-store', 'chevron-2')" class="w-full flex items-center justify-between text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-cart-shopping text-accent-green text-sm w-4"></i>
+                            <span>المتجر الزراعي</span>
+                        </div>
+                        <i id="chevron-2" class="fa-solid fa-chevron-down text-xs text-muted-text transition-transform duration-200"></i>
+                    </button>
+                    <div id="acc-store" class="accordion-content pr-9 space-y-1 text-xs text-muted-text pt-1">
+                        <a href="#" onclick="switchTab('store-tools'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
+                            <i class="fa-solid fa-screwdriver-wrench text-[10px]"></i> الأدوات الزراعية
+                        </a>
+                        <a href="#" onclick="switchTab('store-seeds'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
+                            <i class="fa-solid fa-jar text-[10px]"></i> بذور بكميات مناسبة
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 3. القاموس الزراعي -->
+                <div class="nav-item">
+                    <button onclick="toggleAccordion('acc-dict', 'chevron-3')" class="w-full flex items-center justify-between text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-book-open text-accent-green text-sm w-4"></i>
+                            <span>القاموس الزراعي</span>
+                        </div>
+                        <i id="chevron-3" class="fa-solid fa-chevron-down text-xs text-muted-text transition-transform duration-200"></i>
+                    </button>
+                    <div id="acc-dict" class="accordion-content pr-9 space-y-1 text-xs text-muted-text pt-1">
+                        <a href="#" onclick="switchTab('dictionary'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
+                            <i class="fa-solid fa-magnifying-glass text-[10px]"></i> ابحث عن حياة النباتات
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 4. ملتقى محبي الزراعة -->
+                <div class="nav-item">
+                    <button id="btn-tab-community" onclick="switchTab('community')" class="w-full flex items-center justify-between text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-users text-accent-green text-sm w-4"></i>
+                            <span>ملتقى محبي الزراعة</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-left text-xs text-muted-text"></i>
+                    </button>
+                </div>
+
+                <!-- 5. التحديات والمراكز (تم تعديل الهوفر والتنسيق المائل) -->
+                <div class="nav-item">
+                    <button id="btn-tab-challenges" onclick="switchTab('challenges')" class="w-full flex items-center gap-3 text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition shadow-none">
+                        <i class="fa-solid fa-trophy text-accent-green text-sm w-4"></i>
+                        <span>التحديات والمراكز</span>
+                    </button>
+                </div>
+
+                <!-- 6. تواصل معنا -->
+                <div class="nav-item">
+                    <button id="btn-tab-contact" onclick="switchTab('contact')" class="w-full flex items-center gap-3 text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition">
+                        <i class="fa-solid fa-envelope text-accent-green text-sm w-4"></i>
+                        <span>تواصل معنا</span>
+                    </button>
+                </div>
+
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="pt-6 border-t border-border-color/80 text-center mt-6 relative z-10">
+            <p class="text-xs italic text-muted-text font-serif leading-relaxed">More Green,</p>
+            <p class="text-xs italic text-muted-text font-serif leading-relaxed">Better Tomorrow</p>
+            <div class="flex justify-center items-center gap-1 mt-2 text-accent-green">
+                <i class="fa-solid fa-leaf text-sm"></i>
+                <i class="fa-solid fa-seedling text-xs"></i>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+        
+        <!-- Hero Header Area -->
+        <header class="hero-banner rounded-3xl p-6 md:p-10 mb-8 border border-border-color relative overflow-hidden shadow-sm flex flex-col items-center">
+            
+            <div class="w-full flex justify-between items-center mb-6 z-10">
+                <button onclick="openModal('cartModal')" class="relative flex items-center gap-2 bg-main-bg/90 hover:bg-white border border-border-color px-4 py-2 rounded-full text-xs md:text-sm font-bold text-hover-green shadow-sm transition backdrop-blur-md">
+                    <i class="fa-solid fa-basket-shopping text-accent-green"></i>
+                    <span>السلة</span>
+                    <span id="cartCount" class="bg-accent-green text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-mono">0</span>
+                </button>
+
+                <button onclick="openModal('aiModal')" class="flex items-center gap-2 bg-main-bg/90 hover:bg-white border border-border-color px-5 py-2 rounded-full text-xs md:text-sm font-bold text-hover-green shadow-sm transition backdrop-blur-md">
+                    <i class="fa-solid fa-wand-magic-sparkles text-accent-green"></i>
+                    <span>Ask AI</span>
+                    <i class="fa-solid fa-leaf text-accent-green text-xs"></i>
+                </button>
+            </div>
+
+            <div class="text-center relative z-10 my-2">
+                <h1 class="brand-title text-6xl md:text-8xl text-accent-green font-bold tracking-wide cursor-pointer hover:scale-[1.01] transition" onclick="switchTab('home')">
+                    Agriculture
+                </h1>
+                <p class="text-xs md:text-sm text-hover-green/80 font-medium mt-1">بوابتك الذكية للزراعة المستدامة والحياة الخضراء</p>
+            </div>
+
+            <div class="w-full max-w-xl relative mt-6 z-10">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-muted-text text-sm"></i>
+                <input 
+                    type="text" 
+                    id="searchInput"
+                    onkeyup="handleGlobalSearch()"
+                    placeholder="ابحث عن نبات، بذور، أدوات، أو استفسار..." 
+                    class="w-full bg-main-bg/95 border border-border-color/90 rounded-full py-3.5 px-12 text-sm focus:outline-none focus:ring-2 focus:ring-accent-green/40 placeholder-muted-text shadow-inner transition text-hover-green font-medium"
+                >
+                <i class="fa-solid fa-leaf absolute right-4 top-1/2 -translate-y-1/2 text-accent-green text-sm opacity-70"></i>
+            </div>
+        </header>
+
+        <!-- ==================== TAB 1: HOME PAGE ==================== -->
+        <div id="tab-home" class="tab-content active space-y-10">
+            <!-- فيديوهات تعليمية -->
+            <section>
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 bg-accent-green text-white rounded-full flex items-center justify-center text-xs shadow-sm">
+                            <i class="fa-solid fa-play mr-0.5"></i>
+                        </div>
+                        <h2 class="text-lg font-bold text-accent-green">فيديوهات تعليمية</h2>
+                    </div>
+                    <button onclick="toggleAudioMute()" class="flex items-center gap-2 text-xs text-muted-text hover:text-hover-green transition bg-card-bg px-3 py-1.5 rounded-full border border-card-border">
+                        <i id="audioIcon" class="fa-solid fa-volume-xmark text-accent-green"></i>
+                        <span id="audioText">بدون موسيقى</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div onclick="openVideoModal('أساسيات تجهيز التربة والإنبات', '05:24')" class="group relative rounded-2xl overflow-hidden bg-card-bg border border-card-border aspect-video cursor-pointer shadow-sm hover:shadow-md transition">
+                        <img src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=600&q=80" alt="Sprouts" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <div class="absolute inset-0 bg-black/25 flex items-center justify-center">
+                            <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-accent-green shadow-lg group-hover:scale-110 transition">
+                                <i class="fa-solid fa-play ml-0.5 text-base"></i>
+                            </div>
+                        </div>
+                        <span class="absolute bottom-2.5 left-2.5 bg-black/70 text-white text-[11px] px-2 py-0.5 rounded font-mono">05:24</span>
+                    </div>
+
+                    <div onclick="openVideoModal('الزراعة داخل الصوب والبيوت المحمية', '08:17')" class="group relative rounded-2xl overflow-hidden bg-card-bg border border-card-border aspect-video cursor-pointer shadow-sm hover:shadow-md transition">
+                        <img src="https://images.unsplash.com/photo-1592417817098-8f3d691a4bf5?auto=format&fit=crop&w=600&q=80" alt="Greenhouse" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <div class="absolute inset-0 bg-black/25 flex items-center justify-center">
+                            <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-accent-green shadow-lg group-hover:scale-110 transition">
+                                <i class="fa-solid fa-play ml-0.5 text-base"></i>
+                            </div>
+                        </div>
+                        <span class="absolute bottom-2.5 left-2.5 bg-black/70 text-white text-[11px] px-2 py-0.5 rounded font-mono">08:17</span>
+                    </div>
+
+                    <div onclick="openVideoModal('طرق نقل الشتلات والعناية بالتربة', '06:32')" class="group relative rounded-2xl overflow-hidden bg-card-bg border border-card-border aspect-video cursor-pointer shadow-sm hover:shadow-md transition">
+                        <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80" alt="Plant Hands" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        <div class="absolute inset-0 bg-black/25 flex items-center justify-center">
+                            <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-accent-green shadow-lg group-hover:scale-110 transition">
+                                <i class="fa-solid fa-play ml-0.5 text-base"></i>
+                            </div>
+                        </div>
+                        <span class="absolute bottom-2.5 left-2.5 bg-black/70 text-white text-[11px] px-2 py-0.5 rounded font-mono">06:32</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- الفرص المتاحة -->
+            <section>
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-seedling text-accent-green"></i>
+                    <h2 class="text-lg font-bold text-accent-green">الفرص المتاحة</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                        <div class="flex gap-3 items-center mb-3">
+                            <img src="https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
+                            <div>
+                                <h3 class="font-bold text-sm text-accent-green mb-1">منحة الزراعة المائية</h3>
+                                <p class="text-xs text-muted-text leading-relaxed">منحة دراسية ممولة بالكامل في مجال الزراعة المائية في جامعة دولية</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-start pt-2 border-t border-card-border/80">
+                            <button onclick="alert('تم تقديم طلبك بنجاح!')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
+                                <i class="fa-solid fa-arrow-left text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                        <div class="flex gap-3 items-center mb-3">
+                            <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
+                            <div>
+                                <h3 class="font-bold text-sm text-accent-green mb-1">وظيفة في شركة زراعية</h3>
+                                <p class="text-xs text-muted-text leading-relaxed">تبحث شركة زراعية كبرى عن مهندسين زراعيين للانضمام لفريق العمل</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-start pt-2 border-t border-card-border/80">
+                            <button onclick="alert('جارٍ التقديم للوظيفة...')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
+                                <i class="fa-solid fa-arrow-left text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                        <div class="flex gap-3 items-center mb-3">
+                            <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
+                            <div>
+                                <h3 class="font-bold text-sm text-accent-green mb-1">برنامج تدريبي</h3>
+                                <p class="text-xs text-muted-text leading-relaxed">تدريب عملي في إدارة المزارع الذكية والتقنيات الحديثة</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-start pt-2 border-t border-card-border/80">
+                            <button onclick="alert('تم الانضمام للتدريب!')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
+                                <i class="fa-solid fa-arrow-left text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- التحديات -->
+            <section>
+                <div class="flex items-center gap-2 mb-4">
+                    <i class="fa-solid fa-trophy text-accent-green"></i>
+                    <h2 class="text-lg font-bold text-accent-green">التحديات</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                        <div class="flex gap-3 items-center mb-3">
+                            <img src="https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
+                            <div>
+                                <h3 class="font-bold text-sm text-accent-green mb-1">تحدي توفير المياه</h3>
+                                <p class="text-xs text-muted-text leading-relaxed">كيف نستخدم المياه بذكاء في الزراعة؟ شارك حلولك!</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-start pt-2 border-t border-card-border/80">
+                            <button onclick="switchTab('challenges')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
+                                <i class="fa-solid fa-arrow-left text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                        <div class="flex gap-3 items-center mb-3">
+                            <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
+                            <div>
+                                <h3 class="font-bold text-sm text-accent-green mb-1">تحدي زراعة 30 يوم</h3>
+                                <p class="text-xs text-muted-text leading-relaxed">ازرع نباتك الخاص واتبع تطوره مع مجتمع محبي الزراعة</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-start pt-2 border-t border-card-border/80">
+                            <button onclick="switchTab('challenges')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
+                                <i class="fa-solid fa-arrow-left text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                        <div class="flex gap-3 items-center mb-3">
+                            <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
+                            <div>
+                                <h3 class="font-bold text-sm text-accent-green mb-1">تحدي الزراعة المستدامة</h3>
+                                <p class="text-xs text-muted-text leading-relaxed">معاً لزراعة مستقبل أفضل لأجيالنا القادمة</p>
+                            </div>
+                        </div>
+                        <div class="flex justify-start pt-2 border-t border-card-border/80">
+                            <button onclick="switchTab('challenges')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
+                                <i class="fa-solid fa-arrow-left text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- ==================== TAB 2: SUGGESTIONS PAGES ==================== -->
+        <!-- 2.1 EASY PLANTS -->
+        <div id="tab-suggestions-easy" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🌱 نباتات سهلة الزراعة للمبتدئين</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1628556270448-4d4e4148e1b1?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                    <h3 class="font-bold text-accent-green text-base">نبات النعناع البلدي</h3>
+                    <p class="text-xs text-muted-text mt-2 leading-relaxed">سريع النمو جداً في الأصص الصغيرة، يحتاج ري منتظم وإضاءة شمس غير مباشرة.</p>
+                </div>
+                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                    <h3 class="font-bold text-accent-green text-base">الصبار (ألوفيرا)</h3>
+                    <p class="text-xs text-muted-text mt-2 leading-relaxed">لا يحتاج للري إلا عند جفاف التربة تماماً، ممتاز جداً لتنقية الهواء والفوائد الطبية.</p>
+                </div>
+                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                    <h3 class="font-bold text-accent-green text-base">البصل الأخضر</h3>
+                    <p class="text-xs text-muted-text mt-2 leading-relaxed">يمكنك زراعته في الماء فقط من بقايا البصل بالمطبخ وسينمو خلال أيام قليلة!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.2 SHADE PLANTS -->
+        <div id="tab-suggestions-shade" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🌲 نباتات ظل منزلية</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                    <h3 class="font-bold text-accent-green text-base">نبات البوتس (Pothos)</h3>
+                    <p class="text-xs text-muted-text mt-2 leading-relaxed">ملك نباتات الظل، يتسلق بحجم جميل ويعيش في الضوء الضعيف بداخل الغرف.</p>
+                </div>
+                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1593482892290-f54927ae1bf6?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                    <h3 class="font-bold text-accent-green text-base">سانسيفيريا (جلد النمر)</h3>
+                    <p class="text-xs text-muted-text mt-2 leading-relaxed">يعيش في أصعب الظروف ويفرز الأكسجين ليلاً، تحفة ديكورية ممتازة.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.3 AROMATIC PLANTS -->
+        <div id="tab-suggestions-aromatic" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🌀 نباتات معطرة وعطرية</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                    <h3 class="font-bold text-accent-green text-base">الريحان الإيطالي العطري</h3>
+                    <p class="text-xs text-muted-text mt-2 leading-relaxed">رائحة فواحة جداً في البلكونة وممتاز للطهي والأطباق الطازجة.</p>
+                </div>
+                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
+                    <img src="https://images.unsplash.com/photo-1528183429752-a97d0bf99b5a?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                    <h3 class="font-bold text-accent-green text-base">اللافندر (الخزامى)</h3>
+                    <p class="text-xs text-muted-text mt-2 leading-relaxed">يساعد على الاسترخاء وتقليل التوتر العصبي برائحته الهادئة.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2.4 BASICS -->
+        <div id="tab-suggestions-basics" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">📖 أساسيات الزراعة المنزلية</h2>
+            <div class="bg-card-bg p-6 rounded-2xl border border-card-border space-y-4">
+                <h3 class="font-bold text-accent-green text-base">الخطوات الذهبية للبدء:</h3>
+                <ul class="list-disc list-inside text-xs text-muted-text space-y-2 leading-relaxed">
+                    <li>اختيار تربة خفيفة جيدة التصريف (مثل البيتموس المخلوط بالبيرلايت).</li>
+                    <li>تأكد دائماً من وجود فتحات تصريف للماء الزائد في أسفل الأصص.</li>
+                    <li>لا تفرط في الري، افحص التربة بعمق 2 سم أولاً قبل إضافة الماء.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 3: STORE PAGES ==================== -->
+        <!-- 3.1 STORE TOOLS -->
+        <div id="tab-store-tools" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🛠️ الأدوات ومستلزمات الزراعة</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-card-bg p-4 rounded-2xl border border-card-border flex flex-col justify-between shadow-sm">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=400&q=80" class="w-full h-44 object-cover rounded-xl mb-3">
+                        <h3 class="font-bold text-accent-green text-base">طقم أدوات زراعة منزلية (3 قطع)</h3>
+                        <p class="text-xs text-muted-text my-2">مجرفة ومشط ومبرد صغير مخصص للبلكونات.</p>
+                        <span class="font-bold text-accent-green text-sm">85 ج.م</span>
+                    </div>
+                    <button onclick="addToCart('طقم أدوات زراعة منزلية', 85)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition shadow-sm">
+                        إضافة للسلة
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3.2 STORE SEEDS (BULK) -->
+        <div id="tab-store-seeds" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🫙 بذور بالكميات المناسبة (تجزئة موفرة)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-card-bg p-4 rounded-2xl border border-card-border flex flex-col justify-between shadow-sm">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1592417817098-8f3d691a4bf5?auto=format&fit=crop&w=400&q=80" class="w-full h-44 object-cover rounded-xl mb-3">
+                        <h3 class="font-bold text-accent-green text-base">ظرف بذور جرجير طازج (عينة منزلية)</h3>
+                        <p class="text-xs text-muted-text my-2">كمية تجزئة موفرة تناسب زراعة أحواض البلكونة بدون هدر.</p>
+                        <span class="font-bold text-accent-green text-sm">15 ج.م</span>
+                    </div>
+                    <button onclick="addToCart('بذور جرجير تجزئة', 15)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition shadow-sm">
+                        إضافة للسلة
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 4: DICTIONARY ==================== -->
+        <div id="tab-dictionary" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">القاموس الزراعي الشامل 📖</h2>
+            <div class="bg-card-bg p-6 rounded-2xl border border-card-border space-y-4 shadow-sm">
+                <input id="dictQuery" type="text" onkeyup="filterDict()" placeholder="ابحث باسم النبات في القاموس..." class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                <div id="dictResults" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 bg-sidebar-bg rounded-xl border border-border-color">
+                        <h4 class="font-bold text-accent-green text-base mb-1">🌿 النعناع</h4>
+                        <p class="text-xs text-muted-text"><strong>الري:</strong> يومي أو عند جفاف التربة السطحية.</p>
+                        <p class="text-xs text-muted-text"><strong>الإضاءة:</strong> شمس متوسطة / غير مباشرة.</p>
+                    </div>
+                    <div class="p-4 bg-sidebar-bg rounded-xl border border-border-color">
+                        <h4 class="font-bold text-accent-green text-base mb-1">🪴 البوتس</h4>
+                        <p class="text-xs text-muted-text"><strong>الري:</strong> كل 5-7 أيام عند جفاف التربة.</p>
+                        <p class="text-xs text-muted-text"><strong>الإضاءة:</strong> ضوء إضاءة داخلية (ظل).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 5: COMMUNITY ==================== -->
+        <div id="tab-community" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">ملتقى محبي الزراعة 🌱</h2>
+            
+            <div class="bg-card-bg p-4 rounded-2xl border border-card-border space-y-3 shadow-sm">
+                <textarea id="postInput" placeholder="شارك تجربتك الزراعية أو اسأل المجتمع..." class="w-full bg-sidebar-bg p-3 rounded-xl text-xs text-hover-green focus:outline-none border border-border-color resize-none h-20"></textarea>
+                <div class="flex justify-between items-center">
+                    <button class="text-xs text-muted-text hover:text-accent-green">
+                        <i class="fa-solid fa-image ml-1"></i> إضافة صورة
+                    </button>
+                    <button onclick="publishPost()" class="bg-accent-green text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-hover-green transition shadow-sm">
+                        نشر
+                    </button>
+                </div>
+            </div>
+
+            <div id="feedContainer" class="space-y-4">
+                <div class="bg-card-bg p-4 rounded-2xl border border-card-border space-y-2 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-accent-green text-white flex items-center justify-center font-bold text-xs">
+                            أح
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-accent-green">أحمد محمود</h4>
+                            <span class="text-[10px] text-muted-text">منذ ساعتين</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-hover-green leading-relaxed">نجحت تجربة زراعة النعناع في البلكونة باستخدام أصص صغيرة! شكراً لكم على نصائح الري.</p>
+                    <div class="flex gap-4 pt-2 border-t border-card-border text-xs text-muted-text">
+                        <button class="hover:text-accent-green"><i class="fa-regular fa-heart ml-1"></i> إعجاب</button>
+                        <button class="hover:text-accent-green"><i class="fa-regular fa-comment ml-1"></i> تعليق</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 6: CHALLENGES ==================== -->
+        <div id="tab-challenges" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🏆 التحديات والمراكز</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-card-bg p-5 rounded-2xl border border-card-border space-y-3">
+                    <h3 class="font-bold text-accent-green text-base">تحدي زراعة 30 يوم</h3>
+                    <p class="text-xs text-muted-text leading-relaxed">تابع تطور نباتك يومياً بالصور مع مجتمع الزراعة واكسب نقاط التحدي!</p>
+                    <button onclick="alert('تم انضمامك للتحدي!')" class="bg-accent-green text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition">الانضمام للتحدي</button>
+                </div>
+                <div class="bg-card-bg p-5 rounded-2xl border border-card-border space-y-3">
+                    <h3 class="font-bold text-accent-green text-base">قائمة المتصدرين 🥇</h3>
+                    <div class="space-y-2 text-xs text-hover-green">
+                        <div class="flex justify-between border-b pb-1"><span>1. أسرار أحمد</span> <span class="font-bold text-accent-green">1450 نقطة</span></div>
+                        <div class="flex justify-between border-b pb-1"><span>2. م. محمد علي</span> <span class="font-bold text-accent-green">1200 نقطة</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 7: CONTACT ==================== -->
+        <div id="tab-contact" class="tab-content space-y-6">
+            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">تواصل معنا</h2>
+            <div class="bg-card-bg p-6 rounded-2xl border border-card-border max-w-xl mx-auto space-y-4 shadow-sm">
+                <div>
+                    <label class="block text-xs font-bold text-accent-green mb-1">الاسم الكامل</label>
+                    <input type="text" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-accent-green mb-1">البريد الإلكتروني</label>
+                    <input type="email" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-accent-green mb-1">رسالتك أو استفسارك</label>
+                    <textarea class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none h-28 resize-none"></textarea>
+                </div>
+                <button onclick="alert('تم إرسال رسالتك بنجاح!')" class="w-full bg-accent-green text-white font-bold text-xs py-3 rounded-xl hover:bg-hover-green transition shadow-sm">
+                    إرسال الرسالة
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Ask AI Modal -->
+    <div id="aiModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-main-bg border border-border-color rounded-3xl w-full max-w-md p-6 relative shadow-2xl flex flex-col h-[500px]">
+            <button onclick="closeModal('aiModal')" class="absolute top-4 left-4 text-muted-text hover:text-hover-green">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="flex items-center gap-2 pb-4 border-b border-border-color">
+                <i class="fa-solid fa-wand-magic-sparkles text-accent-green"></i>
+                <h3 class="font-bold text-accent-green text-base">مساعد الزراعة الذكي (Ask AI)</h3>
+            </div>
+            
+            <div id="aiChatBox" class="flex-1 overflow-y-auto my-4 space-y-3 p-2 text-xs">
+                <div class="bg-sidebar-bg p-3 rounded-2xl max-w-[85%] text-hover-green leading-relaxed border border-border-color/50">
+                    مرحباً بك! أنا مستشارك الزراعي بالذكاء الاصطناعي. كيف يمكنني مساعدتك في حديقتك اليوم؟
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2 border-t border-border-color">
+                <input id="aiInput" type="text" placeholder="اسأل المساعد الذكي شيئاً..." class="flex-1 bg-card-bg px-4 py-2.5 rounded-full text-xs border border-border-color focus:outline-none">
+                <button onclick="sendAiMessage()" class="bg-accent-green text-white px-4 py-2.5 rounded-full text-xs font-bold hover:bg-hover-green transition shadow-sm">
+                    إرسال
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Modal -->
+    <div id="videoModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-main-bg border border-border-color rounded-3xl w-full max-w-2xl p-6 relative shadow-2xl space-y-4">
+            <button onclick="closeModal('videoModal')" class="absolute top-4 left-4 text-muted-text hover:text-hover-green">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 id="modalVideoTitle" class="font-bold text-accent-green text-base">عنوان الفيديو</h3>
+            <div class="bg-black aspect-video rounded-2xl flex items-center justify-center relative overflow-hidden shadow-inner">
+                <i class="fa-solid fa-circle-play text-white text-5xl opacity-80 cursor-pointer hover:scale-110 transition"></i>
+                <span id="modalVideoTime" class="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2 py-0.5 rounded font-mono">00:00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shopping Cart Modal -->
+    <div id="cartModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-main-bg border border-border-color rounded-3xl w-full max-w-md p-6 relative shadow-2xl space-y-4">
+            <button onclick="closeModal('cartModal')" class="absolute top-4 left-4 text-muted-text hover:text-hover-green">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="font-bold text-accent-green text-base border-b border-border-color pb-2">سلة المستلزمات</h3>
+            <div id="cartItemsList" class="space-y-2 max-h-60 overflow-y-auto text-xs text-hover-green">
+                <p class="text-muted-text text-center py-4">السلة فارغة حالياً</p>
+            </div>
+            <div class="pt-2 border-t border-border-color flex justify-between items-center">
+                <span class="font-bold text-xs text-accent-green">الإجمالي: <span id="cartTotal">0</span> ج.م</span>
+                <button onclick="alert('تم إرسال طلبك بنجاح!')" class="bg-accent-green text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-hover-green transition shadow-sm">
+                    إتمام الشراء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+    <script>
+        let cart = [];
+        let isAudioMuted = true;
+
+        // Accordion Controller
+        function toggleAccordion(id, chevronId) {
+            const content = document.getElementById(id);
+            const chevron = document.getElementById(chevronId);
+            content.classList.toggle('open');
+            chevron.classList.toggle('rotate-chevron');
+        }
+
+        // Tab Navigation with Active Sidebar Highlight
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            }
+
+            // Remove active highlights from single buttons
+            ['btn-tab-community', 'btn-tab-challenges', 'btn-tab-contact'].forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) btn.classList.remove('sidebar-item-active');
+            });
+
+            // Highlight active single button if clicked
+            const activeBtn = document.getElementById(`btn-tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add('sidebar-item-active');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Mute Audio Toggle
+        function toggleAudioMute() {
+            isAudioMuted = !isAudioMuted;
+            const icon = document.getElementById('audioIcon');
+            const text = document.getElementById('audioText');
+            if (isAudioMuted) {
+                icon.className = "fa-solid fa-volume-xmark text-accent-green";
+                text.innerText = "بدون موسيقى";
+            } else {
+                icon.className = "fa-solid fa-volume-high text-accent-green";
+                text.innerText = "تشغيل الصوت";
+            }
+        }
+
+        // Modal Helpers
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function openVideoModal(title, time) {
+            document.getElementById('modalVideoTitle').innerText = title;
+            document.getElementById('modalVideoTime').innerText = time;
+            openModal('videoModal');
+        }
+
+        // Cart Actions
+        function addToCart(title, price) {
+            cart.push({ title, price });
+            updateCartUI();
+            alert(`تمت إضافة "${title}" إلى سلتك.`);
+        }
+
+        function updateCartUI() {
+            document.getElementById('cartCount').innerText = cart.length;
+            const list = document.getElementById('cartItemsList');
+            const totalSpan = document.getElementById('cartTotal');
+
+            if (cart.length === 0) {
+                list.innerHTML = `<p class="text-muted-text text-center py-4">السلة فارغة حالياً</p>`;
+                totalSpan.innerText = "0";
+                return;
+            }
+
+            let html = '';
+            let total = 0;
+            cart.forEach((item) => {
+                total += item.price;
+                html += `
+                    <div class="flex justify-between items-center bg-sidebar-bg p-2.5 rounded-xl border border-border-color">
+                        <span>${item.title}</span>
+                        <span class="font-bold text-accent-green">${item.price} ج.م</span>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+            totalSpan.innerText = total;
+        }
+
+        // AI Chat Assistant Logic
+        function sendAiMessage() {
+            const input = document.getElementById('aiInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const chatBox = document.getElementById('aiChatBox');
+            chatBox.innerHTML += `
+                <div class="bg-accent-green text-white p-3 rounded-2xl max-w-[85%] mr-auto text-left leading-relaxed shadow-sm">
+                    ${text}
+                </div>
+            `;
+            input.value = '';
+
+            setTimeout(() => {
+                let reply = "بناءً على سؤالك، يُنصح بالري المنتظم عندما تجف التربة بعمق 2 سم وتوفير إضاءة ممتازة.";
+                chatBox.innerHTML += `
+                    <div class="bg-sidebar-bg p-3 rounded-2xl max-w-[85%] text-hover-green leading-relaxed border border-border-color/50">
+                        ${reply}
+                    </div>
+                `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 500);
+        }
+
+        // Feed Publishing
+        function publishPost() {
+            const input = document.getElementById('postInput');
+            const val = input.value.trim();
+            if (!val) return;
+
+            const feed = document.getElementById('feedContainer');
+            feed.innerHTML = `
+                <div class="bg-card-bg p-4 rounded-2xl border border-card-border space-y-2 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-accent-green text-white flex items-center justify-center font-bold text-xs">
+                            أنت
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-accent-green">عضو جديد</h4>
+                            <span class="text-[10px] text-muted-text">الآن</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-hover-green leading-relaxed">${val}</p>
+                    <div class="flex gap-4 pt-2 border-t border-card-border text-xs text-muted-text">
+                        <button class="hover:text-accent-green"><i class="fa-regular fa-heart ml-1"></i> إعجاب</button>
+                        <button class="hover:text-accent-green"><i class="fa-regular fa-comment ml-1"></i> تعليق</button>
+                    </div>
+                </div>
+            ` + feed.innerHTML;
+
+            input.value = '';
+        }
+
+        // Global Search Router
+        function handleGlobalSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (!query) return;
+
+            if (query.includes("بذور")) switchTab('store-seeds');
+            else if (query.includes("أدوات")) switchTab('store-tools');
+            else if (query.includes("سهلة")) switchTab('suggestions-easy');
+            else if (query.includes("ظل")) switchTab('suggestions-shade');
+            else if (query.includes("معطرة")) switchTab('suggestions-aromatic');
+            else if (query.includes("قاموس") || query.includes("صبار")) switchTab('dictionary');
+        }
+    </script>
+</body>
+</html>
