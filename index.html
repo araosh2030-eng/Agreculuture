@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,13 +8,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Cairo Font for clean modern Arabic -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Playfair+Display:ital,wght@1,600;1,700;1,800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@1,600;1,700;1,800&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -29,7 +30,7 @@
                         'active-bg': '#DFDACB',
                     },
                     fontFamily: {
-                        'tajawal': ['Tajawal', 'sans-serif'],
+                        'cairo': ['Cairo', 'sans-serif'],
                         'serif-brand': ['Playfair Display', 'serif'],
                     }
                 }
@@ -38,14 +39,59 @@
     </script>
 
     <style>
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: #F5F2EA;
-            color: #233423;
-            overflow-x: hidden;
+        * {
+            font-family: 'Cairo', sans-serif;
         }
 
-        /* Custom Scrollbar */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.45;
+        }
+
+        body.plant-cursor-active, 
+        body.plant-cursor-active button, 
+        body.plant-cursor-active input, 
+        body.plant-cursor-active textarea, 
+        body.plant-cursor-active a {
+            cursor: none !important;
+        }
+
+        #plant-cursor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 99999;
+            transform: translate(-20%, -20%);
+            font-size: 20px;
+            color: #314731;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+            transition: transform 0.04s ease-out;
+        }
+
+        .click-ripple {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            background: rgba(49, 71, 49, 0.25);
+            transform: translate(-50%, -50%) scale(0);
+            animation: rippleAnim 0.45s cubic-bezier(0, 0.2, 0.8, 1) forwards;
+            z-index: 9998;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: translate(-50%, -50%) scale(2.2);
+                opacity: 0;
+            }
+        }
+
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -68,7 +114,7 @@
         }
 
         .hero-banner {
-            background-image: linear-gradient(to bottom, rgba(245, 242, 234, 0.25), rgba(245, 242, 234, 0.95)), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1920&q=80');
+            background-image: linear-gradient(to bottom, rgba(245, 242, 234, 0.35), rgba(245, 242, 234, 0.95)), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center top;
         }
@@ -76,43 +122,96 @@
         .accordion-content {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease-out;
+            transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            opacity: 0;
         }
 
         .accordion-content.open {
             max-height: 300px;
+            opacity: 1;
         }
 
         .rotate-chevron {
             transform: rotate(180deg);
-            transition: transform 0.2s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .tab-content {
             display: none;
+            opacity: 0;
+            transform: translateY(10px);
         }
 
         .tab-content.active {
             display: block;
-            animation: fadeIn 0.35s ease-in-out;
+            animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Styling Active Sidebar Items */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animated-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(4px);
+        }
+        .animated-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px -5px rgba(49, 71, 49, 0.08);
+        }
+
+        .modal-overlay {
+            backdrop-filter: blur(6px);
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-content {
+            animation: modalScaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes modalScaleIn {
+            from { opacity: 0; transform: scale(0.92) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
         .sidebar-item-active {
             background-color: #DFDACB !important;
             font-weight: 800 !important;
+            transform: translateX(-3px);
+            transition: all 0.2s ease;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
+        .scan-laser {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(49, 71, 49, 0.8);
+            box-shadow: 0 0 12px #314731;
+            animation: scanAnimation 2s infinite ease-in-out;
+        }
+
+        @keyframes scanAnimation {
+            0% { top: 0%; }
+            50% { top: 95%; }
+            100% { top: 0%; }
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col md:flex-row antialiased select-none relative">
+<body class="min-h-screen flex flex-col md:flex-row antialiased select-none relative plant-cursor-active bg-main-bg">
+
+    <!-- خلفية جزيئات متحركة للتفاعل البصري الفاخر -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- مؤشر الماوس المخصص -->
+    <div id="plant-cursor">
+        <i class="fa-solid fa-seedling"></i>
+    </div>
 
     <!-- Sidebar / القائمة الجانبية -->
-    <aside class="w-full md:w-72 bg-sidebar-bg border-l border-border-color p-5 flex flex-col justify-between shrink-0 sticky top-0 h-auto md:h-screen z-20 shadow-sm relative overflow-hidden">
+    <aside class="w-full md:w-72 bg-sidebar-bg/95 backdrop-blur-md border-l border-border-color p-5 flex flex-col justify-between shrink-0 sticky top-0 h-auto md:h-screen z-20 shadow-sm relative overflow-hidden">
         
         <div class="absolute -top-10 -right-10 w-36 h-36 pointer-events-none opacity-20">
             <i class="fa-solid fa-plant-wilt text-7xl text-accent-green"></i>
@@ -121,101 +220,134 @@
         <div>
             <!-- Sidebar Header & Title -->
             <div class="flex items-center justify-between md:mb-6">
-                <div class="flex items-center gap-2.5 text-accent-green font-bold text-lg cursor-pointer hover:opacity-80 transition" onclick="switchTab('home')">
-                    <div class="w-8 h-8 rounded-full bg-accent-green/10 flex items-center justify-center">
+                <div class="flex items-center gap-2.5 text-accent-green font-bold text-lg cursor-pointer hover:opacity-80 transition-opacity" onclick="switchTab('home')">
+                    <div class="w-8 h-8 rounded-full bg-accent-green/10 flex items-center justify-center transition-transform hover:rotate-12">
                         <i class="fa-solid fa-leaf text-accent-green text-base"></i>
                     </div>
-                    <span>الزراعة الرقمية</span>
+                    <span data-i18n="appTitle">الزراعة الرقمية</span>
                 </div>
             </div>
 
-            <!-- Navigation Links Accordion Group -->
+            <!-- Navigation Links Group -->
             <nav class="space-y-2 mt-4 md:mt-0">
                 
                 <!-- 1. اقتراحات -->
                 <div class="nav-item">
-                    <button onclick="toggleAccordion('acc-suggestions', 'chevron-1')" class="w-full flex items-center justify-between text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition">
+                    <button onclick="toggleAccordion('acc-suggestions', 'chevron-1')" class="w-full flex items-center justify-between text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
                         <div class="flex items-center gap-3">
                             <i class="fa-solid fa-seedling text-accent-green text-sm w-4"></i>
-                            <span>اقتراحات</span>
+                            <span data-i18n="suggestions">اقتراحات</span>
                         </div>
-                        <i id="chevron-1" class="fa-solid fa-chevron-down text-xs text-muted-text transition-transform duration-200"></i>
+                        <i id="chevron-1" class="fa-solid fa-chevron-down text-[10px] text-muted-text"></i>
                     </button>
                     <div id="acc-suggestions" class="accordion-content pr-9 space-y-1 text-xs text-muted-text pt-1">
-                        <a href="#" onclick="switchTab('suggestions-easy'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
-                            <i class="fa-solid fa-sprout text-[10px]"></i> نباتات سهلة الزراعة
+                        <a href="#" onclick="switchTab('suggestions-easy'); return false;" class="flex items-center gap-2 hover:text-accent-green hover:translate-x-1 py-1.5 px-2 rounded-lg transition-all" data-i18n="easyPlants">
+                            <i class="fa-solid fa-sprout text-[10px]"></i> <span data-i18n="easyPlants">نباتات سهلة الزراعة</span>
                         </a>
-                        <a href="#" onclick="switchTab('suggestions-shade'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
-                            <i class="fa-solid fa-tree text-[10px]"></i> نباتات ظل
+                        <a href="#" onclick="switchTab('suggestions-shade'); return false;" class="flex items-center gap-2 hover:text-accent-green hover:translate-x-1 py-1.5 px-2 rounded-lg transition-all" data-i18n="shadePlants">
+                            <i class="fa-solid fa-tree text-[10px]"></i> <span data-i18n="shadePlants">نباتات ظل</span>
                         </a>
-                        <a href="#" onclick="switchTab('suggestions-aromatic'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
-                            <i class="fa-solid fa-fan text-[10px]"></i> نباتات معطرة
+                        <a href="#" onclick="switchTab('suggestions-aromatic'); return false;" class="flex items-center gap-2 hover:text-accent-green hover:translate-x-1 py-1.5 px-2 rounded-lg transition-all" data-i18n="aromaticPlants">
+                            <i class="fa-solid fa-fan text-[10px]"></i> <span data-i18n="aromaticPlants">نباتات معطرة</span>
                         </a>
-                        <a href="#" onclick="switchTab('suggestions-basics'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
-                            <i class="fa-solid fa-book text-[10px]"></i> أساسيات الزراعة
+                        <a href="#" onclick="switchTab('suggestions-basics'); return false;" class="flex items-center gap-2 hover:text-accent-green hover:translate-x-1 py-1.5 px-2 rounded-lg transition-all" data-i18n="basics">
+                            <i class="fa-solid fa-book text-[10px]"></i> <span data-i18n="basics">أساسيات الزراعة</span>
                         </a>
                     </div>
                 </div>
 
-                <!-- 2. المتجر الزراعي -->
+                <!-- 2. جدول ومواعيد الري -->
                 <div class="nav-item">
-                    <button onclick="toggleAccordion('acc-store', 'chevron-2')" class="w-full flex items-center justify-between text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition">
+                    <button id="btn-tab-schedule" onclick="switchTab('schedule')" class="w-full flex items-center gap-3 text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
+                        <i class="fa-solid fa-droplet text-accent-green text-sm w-4"></i>
+                        <span data-i18n="schedule">جدول وتنبيهات الري</span>
+                    </button>
+                </div>
+
+                <!-- 3. حاسبة التربة والأسمدة -->
+                <div class="nav-item">
+                    <button id="btn-tab-calculator" onclick="switchTab('calculator')" class="w-full flex items-center gap-3 text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
+                        <i class="fa-solid fa-calculator text-accent-green text-sm w-4"></i>
+                        <span data-i18n="calculator">حاسبة التربة والأسمدة</span>
+                    </button>
+                </div>
+
+                <!-- 4. المتجر الزراعي -->
+                <div class="nav-item">
+                    <button onclick="toggleAccordion('acc-store', 'chevron-2')" class="w-full flex items-center justify-between text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
                         <div class="flex items-center gap-3">
                             <i class="fa-solid fa-cart-shopping text-accent-green text-sm w-4"></i>
-                            <span>المتجر الزراعي</span>
+                            <span data-i18n="store">المتجر الزراعي</span>
                         </div>
-                        <i id="chevron-2" class="fa-solid fa-chevron-down text-xs text-muted-text transition-transform duration-200"></i>
+                        <i id="chevron-2" class="fa-solid fa-chevron-down text-[10px] text-muted-text"></i>
                     </button>
                     <div id="acc-store" class="accordion-content pr-9 space-y-1 text-xs text-muted-text pt-1">
-                        <a href="#" onclick="switchTab('store-tools'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
-                            <i class="fa-solid fa-screwdriver-wrench text-[10px]"></i> الأدوات الزراعية
+                        <a href="#" onclick="switchTab('store-tools'); return false;" class="flex items-center gap-2 hover:text-accent-green hover:translate-x-1 py-1.5 px-2 rounded-lg transition-all" data-i18n="tools">
+                            <i class="fa-solid fa-screwdriver-wrench text-[10px]"></i> <span data-i18n="tools">الأدوات الزراعية</span>
                         </a>
-                        <a href="#" onclick="switchTab('store-seeds'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
-                            <i class="fa-solid fa-jar text-[10px]"></i> بذور بكميات مناسبة
+                        <a href="#" onclick="switchTab('store-seeds'); return false;" class="flex items-center gap-2 hover:text-accent-green hover:translate-x-1 py-1.5 px-2 rounded-lg transition-all" data-i18n="seeds">
+                            <i class="fa-solid fa-jar text-[10px]"></i> <span data-i18n="seeds">بذور بكميات مناسبة</span>
                         </a>
                     </div>
                 </div>
 
-                <!-- 3. القاموس الزراعي -->
+                <!-- 5. القاموس الزراعي -->
                 <div class="nav-item">
-                    <button onclick="toggleAccordion('acc-dict', 'chevron-3')" class="w-full flex items-center justify-between text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition">
+                    <button onclick="toggleAccordion('acc-dict', 'chevron-3')" class="w-full flex items-center justify-between text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
                         <div class="flex items-center gap-3">
                             <i class="fa-solid fa-book-open text-accent-green text-sm w-4"></i>
-                            <span>القاموس الزراعي</span>
+                            <span data-i18n="dictionary">القاموس الزراعي</span>
                         </div>
-                        <i id="chevron-3" class="fa-solid fa-chevron-down text-xs text-muted-text transition-transform duration-200"></i>
+                        <i id="chevron-3" class="fa-solid fa-chevron-down text-[10px] text-muted-text"></i>
                     </button>
                     <div id="acc-dict" class="accordion-content pr-9 space-y-1 text-xs text-muted-text pt-1">
-                        <a href="#" onclick="switchTab('dictionary'); return false;" class="flex items-center gap-2 hover:text-accent-green py-1.5 px-2 rounded-lg transition">
-                            <i class="fa-solid fa-magnifying-glass text-[10px]"></i> ابحث عن حياة النباتات
+                        <a href="#" onclick="switchTab('dictionary'); return false;" class="flex items-center gap-2 hover:text-accent-green hover:translate-x-1 py-1.5 px-2 rounded-lg transition-all" data-i18n="searchDict">
+                            <i class="fa-solid fa-magnifying-glass text-[10px]"></i> <span data-i18n="searchDict">ابحث عن حياة النباتات</span>
                         </a>
                     </div>
                 </div>
 
-                <!-- 4. ملتقى محبي الزراعة -->
+                <!-- 6. طبيب النباتات بالصور -->
                 <div class="nav-item">
-                    <button id="btn-tab-community" onclick="switchTab('community')" class="w-full flex items-center justify-between text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition">
+                    <button id="btn-tab-doctor" onclick="switchTab('doctor')" class="w-full flex items-center justify-between text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-user-doctor text-accent-green text-sm w-4"></i>
+                            <span data-i18n="plantDoctor">طبيب النباتات</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- 7. ملتقى محبي الزراعة -->
+                <div class="nav-item">
+                    <button id="btn-tab-community" onclick="switchTab('community')" class="w-full flex items-center justify-between text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
                         <div class="flex items-center gap-3">
                             <i class="fa-solid fa-users text-accent-green text-sm w-4"></i>
-                            <span>ملتقى محبي الزراعة</span>
+                            <span data-i18n="community">ملتقى محبي الزراعة</span>
                         </div>
-                        <i class="fa-solid fa-chevron-left text-xs text-muted-text"></i>
                     </button>
                 </div>
 
-                <!-- 5. التحديات والمراكز (تم تعديل الهوفر والتنسيق المائل) -->
+                <!-- 8. التحديات والمراكز -->
                 <div class="nav-item">
-                    <button id="btn-tab-challenges" onclick="switchTab('challenges')" class="w-full flex items-center gap-3 text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition shadow-none">
+                    <button id="btn-tab-challenges" onclick="switchTab('challenges')" class="w-full flex items-center gap-3 text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
                         <i class="fa-solid fa-trophy text-accent-green text-sm w-4"></i>
-                        <span>التحديات والمراكز</span>
+                        <span data-i18n="challenges">التحديات والمراكز</span>
                     </button>
                 </div>
 
-                <!-- 6. تواصل معنا -->
+                <!-- 9. قسم الإعدادات -->
                 <div class="nav-item">
-                    <button id="btn-tab-contact" onclick="switchTab('contact')" class="w-full flex items-center gap-3 text-sm font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/70 transition">
+                    <button id="btn-tab-settings" onclick="switchTab('settings')" class="w-full flex items-center gap-3 text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
+                        <i class="fa-solid fa-gear text-accent-green text-sm w-4"></i>
+                        <span data-i18n="settings">الإعدادات</span>
+                    </button>
+                </div>
+
+                <!-- 10. تواصل معنا -->
+                <div class="nav-item">
+                    <button id="btn-tab-contact" onclick="switchTab('contact')" class="w-full flex items-center gap-3 text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
                         <i class="fa-solid fa-envelope text-accent-green text-sm w-4"></i>
-                        <span>تواصل معنا</span>
+                        <span data-i18n="contact">تواصل معنا</span>
                     </button>
                 </div>
 
@@ -227,37 +359,44 @@
             <p class="text-xs italic text-muted-text font-serif leading-relaxed">More Green,</p>
             <p class="text-xs italic text-muted-text font-serif leading-relaxed">Better Tomorrow</p>
             <div class="flex justify-center items-center gap-1 mt-2 text-accent-green">
-                <i class="fa-solid fa-leaf text-sm"></i>
+                <i class="fa-solid fa-leaf text-sm animate-pulse"></i>
                 <i class="fa-solid fa-seedling text-xs"></i>
             </div>
         </div>
     </aside>
 
     <!-- Main Content Area -->
-    <main class="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
+    <main class="flex-1 p-4 md:p-8 overflow-y-auto max-w-7xl mx-auto w-full z-10">
         
         <!-- Hero Header Area -->
         <header class="hero-banner rounded-3xl p-6 md:p-10 mb-8 border border-border-color relative overflow-hidden shadow-sm flex flex-col items-center">
             
             <div class="w-full flex justify-between items-center mb-6 z-10">
-                <button onclick="openModal('cartModal')" class="relative flex items-center gap-2 bg-main-bg/90 hover:bg-white border border-border-color px-4 py-2 rounded-full text-xs md:text-sm font-bold text-hover-green shadow-sm transition backdrop-blur-md">
-                    <i class="fa-solid fa-basket-shopping text-accent-green"></i>
-                    <span>السلة</span>
-                    <span id="cartCount" class="bg-accent-green text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-mono">0</span>
-                </button>
+                <div class="flex items-center gap-3">
+                    <button onclick="openModal('cartModal')" class="relative flex items-center gap-2 bg-main-bg/90 hover:bg-white border border-border-color px-4 py-2 rounded-full text-xs md:text-sm font-bold text-hover-green shadow-sm transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-md">
+                        <i class="fa-solid fa-basket-shopping text-accent-green"></i>
+                        <span data-i18n="cart">السلة</span>
+                        <span id="cartCount" class="bg-accent-green text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-mono">0</span>
+                    </button>
 
-                <button onclick="openModal('aiModal')" class="flex items-center gap-2 bg-main-bg/90 hover:bg-white border border-border-color px-5 py-2 rounded-full text-xs md:text-sm font-bold text-hover-green shadow-sm transition backdrop-blur-md">
-                    <i class="fa-solid fa-wand-magic-sparkles text-accent-green"></i>
+                    <button onclick="openModal('authModal')" id="authBtnDisplay" class="flex items-center gap-2 bg-main-bg/90 hover:bg-white border border-border-color px-4 py-2 rounded-full text-xs md:text-sm font-bold text-hover-green shadow-sm transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-md">
+                        <i class="fa-solid fa-user text-accent-green"></i>
+                        <span id="authBtnText" data-i18n="myAccount">حسابي / تسجيل الدخول</span>
+                    </button>
+                </div>
+
+                <button onclick="openModal('aiModal')" class="flex items-center gap-2 bg-main-bg/90 hover:bg-white border border-border-color px-5 py-2 rounded-full text-xs md:text-sm font-bold text-hover-green shadow-sm transition-all duration-300 hover:scale-105 active:scale-95 backdrop-blur-md">
+                    <i class="fa-solid fa-wand-magic-sparkles text-accent-green animate-spin" style="animation-duration: 4s;"></i>
                     <span>Ask AI</span>
                     <i class="fa-solid fa-leaf text-accent-green text-xs"></i>
                 </button>
             </div>
 
             <div class="text-center relative z-10 my-2">
-                <h1 class="brand-title text-6xl md:text-8xl text-accent-green font-bold tracking-wide cursor-pointer hover:scale-[1.01] transition" onclick="switchTab('home')">
+                <h1 class="brand-title text-6xl md:text-8xl text-accent-green font-bold tracking-wide cursor-pointer hover:scale-105 transition-transform duration-300" onclick="switchTab('home')">
                     Agriculture
                 </h1>
-                <p class="text-xs md:text-sm text-hover-green/80 font-medium mt-1">بوابتك الذكية للزراعة المستدامة والحياة الخضراء</p>
+                <p class="text-xs md:text-sm text-hover-green/80 font-medium mt-1" data-i18n="heroSubtitle">بوابتك الذكية للزراعة المستدامة والحياة الخضراء</p>
             </div>
 
             <div class="w-full max-w-xl relative mt-6 z-10">
@@ -267,7 +406,8 @@
                     id="searchInput"
                     onkeyup="handleGlobalSearch()"
                     placeholder="ابحث عن نبات، بذور، أدوات، أو استفسار..." 
-                    class="w-full bg-main-bg/95 border border-border-color/90 rounded-full py-3.5 px-12 text-sm focus:outline-none focus:ring-2 focus:ring-accent-green/40 placeholder-muted-text shadow-inner transition text-hover-green font-medium"
+                    data-i18n-placeholder="searchPlaceholder"
+                    class="w-full bg-main-bg/95 border border-border-color/90 rounded-full py-3.5 px-12 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-accent-green/40 placeholder-muted-text shadow-inner transition-all duration-300 text-hover-green font-medium"
                 >
                 <i class="fa-solid fa-leaf absolute right-4 top-1/2 -translate-y-1/2 text-accent-green text-sm opacity-70"></i>
             </div>
@@ -275,6 +415,26 @@
 
         <!-- ==================== TAB 1: HOME PAGE ==================== -->
         <div id="tab-home" class="tab-content active space-y-10">
+            
+            <!-- أداة حالة الطقس والنصيحة الزراعية -->
+            <section class="animated-card bg-card-bg/80 border border-card-border p-5 rounded-3xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center text-2xl shrink-0">
+                        <i class="fa-solid fa-sun animate-spin" style="animation-duration: 12s;"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-accent-green text-sm" data-i18n="locationText">القاهرة، مصر</span>
+                            <span class="bg-accent-green/10 text-accent-green text-[10px] px-2 py-0.5 rounded-full font-bold" data-i18n="weatherStatus">28°C مشمس</span>
+                        </div>
+                        <p class="text-xs text-muted-text mt-1" data-i18n="weatherTip">الجو حار ومعتدل، يُفضل ري النباتات في الصباح الباكر وتجنب ري الأوراق مباشرة أثناء ظهيرة الشمس.</p>
+                    </div>
+                </div>
+                <button onclick="switchTab('schedule')" class="bg-accent-green text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition shrink-0 active:scale-95 flex items-center gap-2">
+                    <i class="fa-solid fa-droplet text-xs"></i> <span data-i18n="followWaterSchedule">متابعة جدول الري</span>
+                </button>
+            </section>
+
             <!-- فيديوهات تعليمية -->
             <section>
                 <div class="flex items-center justify-between mb-4">
@@ -282,39 +442,39 @@
                         <div class="w-7 h-7 bg-accent-green text-white rounded-full flex items-center justify-center text-xs shadow-sm">
                             <i class="fa-solid fa-play mr-0.5"></i>
                         </div>
-                        <h2 class="text-lg font-bold text-accent-green">فيديوهات تعليمية</h2>
+                        <h2 class="text-base font-bold text-accent-green" data-i18n="eduVideos">فيديوهات تعليمية</h2>
                     </div>
-                    <button onclick="toggleAudioMute()" class="flex items-center gap-2 text-xs text-muted-text hover:text-hover-green transition bg-card-bg px-3 py-1.5 rounded-full border border-card-border">
+                    <button onclick="toggleAudioMute()" class="flex items-center gap-2 text-xs text-muted-text hover:text-hover-green transition bg-card-bg px-3 py-1.5 rounded-full border border-card-border active:scale-95">
                         <i id="audioIcon" class="fa-solid fa-volume-xmark text-accent-green"></i>
-                        <span id="audioText">بدون موسيقى</span>
+                        <span id="audioText" data-i18n="noAudio">بدون موسيقى</span>
                     </button>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div onclick="openVideoModal('أساسيات تجهيز التربة والإنبات', '05:24')" class="group relative rounded-2xl overflow-hidden bg-card-bg border border-card-border aspect-video cursor-pointer shadow-sm hover:shadow-md transition">
-                        <img src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=600&q=80" alt="Sprouts" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                        <div class="absolute inset-0 bg-black/25 flex items-center justify-center">
-                            <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-accent-green shadow-lg group-hover:scale-110 transition">
+                    <div onclick="openVideoModal('أساسيات تجهيز التربة والإنبات', '05:24')" class="animated-card group relative rounded-2xl overflow-hidden bg-card-bg border border-card-border aspect-video cursor-pointer shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?auto=format&fit=crop&w=600&q=80" alt="Sprouts" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div class="absolute inset-0 bg-black/25 flex items-center justify-center transition-opacity group-hover:bg-black/35">
+                            <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-accent-green shadow-lg group-hover:scale-110 transition duration-300">
                                 <i class="fa-solid fa-play ml-0.5 text-base"></i>
                             </div>
                         </div>
                         <span class="absolute bottom-2.5 left-2.5 bg-black/70 text-white text-[11px] px-2 py-0.5 rounded font-mono">05:24</span>
                     </div>
 
-                    <div onclick="openVideoModal('الزراعة داخل الصوب والبيوت المحمية', '08:17')" class="group relative rounded-2xl overflow-hidden bg-card-bg border border-card-border aspect-video cursor-pointer shadow-sm hover:shadow-md transition">
-                        <img src="https://images.unsplash.com/photo-1592417817098-8f3d691a4bf5?auto=format&fit=crop&w=600&q=80" alt="Greenhouse" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                        <div class="absolute inset-0 bg-black/25 flex items-center justify-center">
-                            <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-accent-green shadow-lg group-hover:scale-110 transition">
+                    <div onclick="openVideoModal('الزراعة داخل الصوب والبيوت المحمية', '08:17')" class="animated-card group relative rounded-2xl overflow-hidden bg-card-bg border border-card-border aspect-video cursor-pointer shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1592417817098-8f3d691a4bf5?auto=format&fit=crop&w=600&q=80" alt="Greenhouse" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div class="absolute inset-0 bg-black/25 flex items-center justify-center transition-opacity group-hover:bg-black/35">
+                            <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-accent-green shadow-lg group-hover:scale-110 transition duration-300">
                                 <i class="fa-solid fa-play ml-0.5 text-base"></i>
                             </div>
                         </div>
                         <span class="absolute bottom-2.5 left-2.5 bg-black/70 text-white text-[11px] px-2 py-0.5 rounded font-mono">08:17</span>
                     </div>
 
-                    <div onclick="openVideoModal('طرق نقل الشتلات والعناية بالتربة', '06:32')" class="group relative rounded-2xl overflow-hidden bg-card-bg border border-card-border aspect-video cursor-pointer shadow-sm hover:shadow-md transition">
-                        <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80" alt="Plant Hands" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                        <div class="absolute inset-0 bg-black/25 flex items-center justify-center">
-                            <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-accent-green shadow-lg group-hover:scale-110 transition">
+                    <div onclick="openVideoModal('طرق نقل الشتلات والعناية بالتربة', '06:32')" class="animated-card group relative rounded-2xl overflow-hidden bg-card-bg border border-card-border aspect-video cursor-pointer shadow-sm">
+                        <img src="https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80" alt="Plant Hands" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div class="absolute inset-0 bg-black/25 flex items-center justify-center transition-opacity group-hover:bg-black/35">
+                            <div class="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-accent-green shadow-lg group-hover:scale-110 transition duration-300">
                                 <i class="fa-solid fa-play ml-0.5 text-base"></i>
                             </div>
                         </div>
@@ -327,105 +487,50 @@
             <section>
                 <div class="flex items-center gap-2 mb-4">
                     <i class="fa-solid fa-seedling text-accent-green"></i>
-                    <h2 class="text-lg font-bold text-accent-green">الفرص المتاحة</h2>
+                    <h2 class="text-base font-bold text-accent-green" data-i18n="opportunities">الفرص المتاحة</h2>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                    <div class="animated-card bg-card-bg/80 border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm">
                         <div class="flex gap-3 items-center mb-3">
                             <img src="https://images.unsplash.com/photo-1558449028-b53a39d100fc?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
                             <div>
-                                <h3 class="font-bold text-sm text-accent-green mb-1">منحة الزراعة المائية</h3>
-                                <p class="text-xs text-muted-text leading-relaxed">منحة دراسية ممولة بالكامل في مجال الزراعة المائية في جامعة دولية</p>
+                                <h3 class="font-bold text-xs text-accent-green mb-1" data-i18n="opp1Title">منحة الزراعة المائية</h3>
+                                <p class="text-[11px] text-muted-text leading-relaxed" data-i18n="opp1Desc">منحة دراسية ممولة بالكامل في مجال الزراعة المائية في جامعة دولية</p>
                             </div>
                         </div>
                         <div class="flex justify-start pt-2 border-t border-card-border/80">
-                            <button onclick="alert('تم تقديم طلبك بنجاح!')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
+                            <button onclick="handleApplyOpp()" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition-all duration-200 hover:scale-110 active:scale-95">
                                 <i class="fa-solid fa-arrow-left text-xs"></i>
                             </button>
                         </div>
                     </div>
 
-                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                    <div class="animated-card bg-card-bg/80 border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm">
                         <div class="flex gap-3 items-center mb-3">
                             <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
                             <div>
-                                <h3 class="font-bold text-sm text-accent-green mb-1">وظيفة في شركة زراعية</h3>
-                                <p class="text-xs text-muted-text leading-relaxed">تبحث شركة زراعية كبرى عن مهندسين زراعيين للانضمام لفريق العمل</p>
+                                <h3 class="font-bold text-xs text-accent-green mb-1" data-i18n="opp2Title">وظيفة في شركة زراعية</h3>
+                                <p class="text-[11px] text-muted-text leading-relaxed" data-i18n="opp2Desc">تبحث شركة زراعية كبرى عن مهندسين زراعيين للانضمام لفريق العمل</p>
                             </div>
                         </div>
                         <div class="flex justify-start pt-2 border-t border-card-border/80">
-                            <button onclick="alert('جارٍ التقديم للوظيفة...')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
+                            <button onclick="handleApplyOpp()" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition-all duration-200 hover:scale-110 active:scale-95">
                                 <i class="fa-solid fa-arrow-left text-xs"></i>
                             </button>
                         </div>
                     </div>
 
-                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+                    <div class="animated-card bg-card-bg/80 border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm">
                         <div class="flex gap-3 items-center mb-3">
                             <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
                             <div>
-                                <h3 class="font-bold text-sm text-accent-green mb-1">برنامج تدريبي</h3>
-                                <p class="text-xs text-muted-text leading-relaxed">تدريب عملي في إدارة المزارع الذكية والتقنيات الحديثة</p>
+                                <h3 class="font-bold text-xs text-accent-green mb-1" data-i18n="opp3Title">برنامج تدريبي</h3>
+                                <p class="text-[11px] text-muted-text leading-relaxed" data-i18n="opp3Desc">تدريب عملي في إدارة المزارع الذكية والتقنيات الحديثة</p>
                             </div>
                         </div>
                         <div class="flex justify-start pt-2 border-t border-card-border/80">
-                            <button onclick="alert('تم الانضمام للتدريب!')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
-                                <i class="fa-solid fa-arrow-left text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- التحديات -->
-            <section>
-                <div class="flex items-center gap-2 mb-4">
-                    <i class="fa-solid fa-trophy text-accent-green"></i>
-                    <h2 class="text-lg font-bold text-accent-green">التحديات</h2>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
-                        <div class="flex gap-3 items-center mb-3">
-                            <img src="https://images.unsplash.com/photo-1509114397022-ed747cca3f65?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
-                            <div>
-                                <h3 class="font-bold text-sm text-accent-green mb-1">تحدي توفير المياه</h3>
-                                <p class="text-xs text-muted-text leading-relaxed">كيف نستخدم المياه بذكاء في الزراعة؟ شارك حلولك!</p>
-                            </div>
-                        </div>
-                        <div class="flex justify-start pt-2 border-t border-card-border/80">
-                            <button onclick="switchTab('challenges')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
-                                <i class="fa-solid fa-arrow-left text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
-                        <div class="flex gap-3 items-center mb-3">
-                            <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
-                            <div>
-                                <h3 class="font-bold text-sm text-accent-green mb-1">تحدي زراعة 30 يوم</h3>
-                                <p class="text-xs text-muted-text leading-relaxed">ازرع نباتك الخاص واتبع تطوره مع مجتمع محبي الزراعة</p>
-                            </div>
-                        </div>
-                        <div class="flex justify-start pt-2 border-t border-card-border/80">
-                            <button onclick="switchTab('challenges')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
-                                <i class="fa-solid fa-arrow-left text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="bg-card-bg border border-card-border rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition">
-                        <div class="flex gap-3 items-center mb-3">
-                            <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 rounded-xl object-cover shrink-0 border border-border-color">
-                            <div>
-                                <h3 class="font-bold text-sm text-accent-green mb-1">تحدي الزراعة المستدامة</h3>
-                                <p class="text-xs text-muted-text leading-relaxed">معاً لزراعة مستقبل أفضل لأجيالنا القادمة</p>
-                            </div>
-                        </div>
-                        <div class="flex justify-start pt-2 border-t border-card-border/80">
-                            <button onclick="switchTab('challenges')" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition">
+                            <button onclick="handleApplyOpp()" class="w-8 h-8 rounded-full bg-[#E3DEC3] flex items-center justify-center hover:bg-accent-green hover:text-white text-accent-green transition-all duration-200 hover:scale-110 active:scale-95">
                                 <i class="fa-solid fa-arrow-left text-xs"></i>
                             </button>
                         </div>
@@ -434,205 +539,412 @@
             </section>
         </div>
 
-        <!-- ==================== TAB 2: SUGGESTIONS PAGES ==================== -->
-        <!-- 2.1 EASY PLANTS -->
+        <!-- ==================== TAB 2: WATERING SCHEDULE ==================== -->
+        <div id="tab-schedule" class="tab-content space-y-6">
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="schedule">جدول وتنبيهات الري</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Water Plant Cards List (Dynamic from DB) -->
+                <div id="scheduleContainer" class="space-y-4">
+                    <!-- سيتم جلب بيانات النباتات هنا ديناميكياً -->
+                </div>
+
+                <!-- Quick Add Plant Reminders -->
+                <div class="animated-card bg-card-bg/80 p-6 rounded-3xl border border-card-border space-y-4 shadow-sm">
+                    <h3 class="font-bold text-accent-green text-sm" data-i18n="addPlantTitle">إضافة نبتة لجدول المتابعة</h3>
+                    <div>
+                        <label class="block text-xs font-bold text-accent-green mb-1" data-i18n="plantNameLabel">اسم النبتة</label>
+                        <input id="newPlantName" type="text" placeholder="مثال: ريحان البلكونة" data-i18n-placeholder="plantNamePlaceholder" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-accent-green mb-1" data-i18n="intervalLabel">معدل الري المطلوب</label>
+                        <select id="newPlantInterval" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                            <option value="1" data-i18n="daily">يومياً</option>
+                            <option value="2" data-i18n="every2Days">كل يومين</option>
+                            <option value="5" data-i18n="every5Days">كل 5 أيام</option>
+                            <option value="7" data-i18n="weekly">أسبوعياً</option>
+                        </select>
+                    </div>
+                    <button onclick="addNewPlantSchedule()" class="w-full bg-accent-green text-white font-bold text-xs py-3 rounded-xl hover:bg-hover-green transition active:scale-95 shadow-sm" data-i18n="addPlantBtn">
+                        إضافة النبتة للجدول
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 3: SMART CALCULATOR ==================== -->
+        <div id="tab-calculator" class="tab-content space-y-6">
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="calculator">حاسبة التربة والأسمدة الذكية</h2>
+            
+            <div class="animated-card bg-card-bg/80 p-6 rounded-3xl border border-card-border space-y-5 shadow-sm max-w-2xl mx-auto">
+                <div class="space-y-1">
+                    <h3 class="font-bold text-accent-green text-sm" data-i18n="calcBoxTitle">احسب الكمية المطلوبة من التربة للأصص والأحواض</h3>
+                    <p class="text-xs text-muted-text" data-i18n="calcBoxDesc">أدخل أبعاد الحوض أو الأصيص لتقوم الحاسبة بمعرفة عدد لترات البيتموس والسماد المطلوبين.</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-accent-green mb-1" data-i18n="lengthLabel">الطول (سم)</label>
+                        <input id="calcLength" type="number" value="30" class="w-full bg-sidebar-bg p-2.5 rounded-xl text-xs border border-border-color focus:outline-none text-center">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-accent-green mb-1" data-i18n="widthLabel">العرض (سم)</label>
+                        <input id="calcWidth" type="number" value="20" class="w-full bg-sidebar-bg p-2.5 rounded-xl text-xs border border-border-color focus:outline-none text-center">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-accent-green mb-1" data-i18n="heightLabel">الارتفاع (سم)</label>
+                        <input id="calcHeight" type="number" value="20" class="w-full bg-sidebar-bg p-2.5 rounded-xl text-xs border border-border-color focus:outline-none text-center">
+                    </div>
+                </div>
+
+                <button onclick="calculateSoilRequirement()" class="w-full bg-accent-green text-white font-bold text-xs py-3 rounded-xl hover:bg-hover-green transition active:scale-95 shadow-sm" data-i18n="calcBtn">
+                    حساب الكمية الفورية
+                </button>
+
+                <div id="calcResultBox" class="bg-sidebar-bg p-4 rounded-2xl border border-border-color space-y-2 hidden">
+                    <h4 class="font-bold text-xs text-accent-green border-b border-border-color pb-1" data-i18n="resultTitle">النتيجة والخلطة الخفيفة الموصى بها:</h4>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-hover-green pt-1">
+                        <div><span data-i18n="totVol">حجم التربة الكلي:</span> <strong id="resVolume" class="text-accent-green">12 L</strong></div>
+                        <div><span data-i18n="peatVol">البيتموس / التورب:</span> <strong id="resPeat" class="text-accent-green">8 L</strong></div>
+                        <div><span data-i18n="perliteVol">البيرلايت (للتصريف):</span> <strong id="resPerlite" class="text-accent-green">4 L</strong></div>
+                        <div><span data-i18n="fertWeight">السماد العضوي (NPK):</span> <strong id="resFert" class="text-accent-green">120 g</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 4: SETTINGS ==================== -->
+        <div id="tab-settings" class="tab-content space-y-6">
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="settings">إعدادات المنصة</h2>
+            
+            <div class="max-w-2xl mx-auto space-y-5">
+                <!-- 1. Language Toggle -->
+                <div class="animated-card bg-card-bg/80 p-5 rounded-3xl border border-card-border flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-accent-green/10 flex items-center justify-center text-accent-green">
+                            <i class="fa-solid fa-language text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-xs text-accent-green" data-i18n="langTitle">لغة المنصة (Language)</h3>
+                            <p class="text-[11px] text-muted-text" data-i18n="langDesc">اختر اللغة المفضلة واعرض المحتوى بالكامل</p>
+                        </div>
+                    </div>
+                    <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-sidebar-bg border border-border-color p-2.5 rounded-xl text-xs font-bold text-accent-green focus:outline-none">
+                        <option value="ar">العربية (Arabic)</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+
+                <!-- 2. Cursor Toggle -->
+                <div class="animated-card bg-card-bg/80 p-5 rounded-3xl border border-card-border flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-accent-green/10 flex items-center justify-center text-accent-green">
+                            <i class="fa-solid fa-seedling text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-xs text-accent-green" data-i18n="cursorTitle">مؤشر النبتة التفاعلي (Plant Cursor)</h3>
+                            <p class="text-[11px] text-muted-text" data-i18n="cursorDesc">تفعيل أيقونة الماوس الخاصة بعالم الزراعة</p>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="cursorToggle" checked onchange="togglePlantCursorSetting(this.checked)" class="sr-only peer">
+                        <div class="w-11 h-6 bg-border-color peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-green"></div>
+                    </label>
+                </div>
+
+                <!-- 3. Notifications Toggle -->
+                <div class="animated-card bg-card-bg/80 p-5 rounded-3xl border border-card-border flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-accent-green/10 flex items-center justify-center text-accent-green">
+                            <i class="fa-solid fa-bell text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-xs text-accent-green" data-i18n="notifTitle">تنبيهات الري الدورية</h3>
+                            <p class="text-[11px] text-muted-text" data-i18n="notifDesc">إرسال إشعارات تذكيرية لمواعيد ري وتسميد النباتات</p>
+                        </div>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" checked class="sr-only peer">
+                        <div class="w-11 h-6 bg-border-color peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent-green"></div>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 5: SUGGESTIONS ==================== -->
+        <!-- 5.1 EASY PLANTS -->
         <div id="tab-suggestions-easy" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🌱 نباتات سهلة الزراعة للمبتدئين</h2>
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="easyPlants">نباتات سهلة الزراعة للمبتدئين</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1628556270448-4d4e4148e1b1?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
-                    <h3 class="font-bold text-accent-green text-base">نبات النعناع البلدي</h3>
-                    <p class="text-xs text-muted-text mt-2 leading-relaxed">سريع النمو جداً في الأصص الصغيرة، يحتاج ري منتظم وإضاءة شمس غير مباشرة.</p>
+                <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border shadow-sm flex flex-col justify-between">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1628556270448-4d4e4148e1b1?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                        <h3 class="font-bold text-accent-green text-sm" data-i18n="mintTitle">نبات النعناع البلدي</h3>
+                        <p class="text-xs text-muted-text mt-2 leading-relaxed" data-i18n="mintDesc">سريع النمو جداً في الأصص الصغيرة، يحتاج ري منتظم وإضاءة شمس غير مباشرة.</p>
+                    </div>
+                    <button onclick="addToCart('شتلة نعناع بلدي', 25)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition-all active:scale-95" data-i18n="orderMint">طلب شتلة (25 ج.م)</button>
                 </div>
-                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
-                    <h3 class="font-bold text-accent-green text-base">الصبار (ألوفيرا)</h3>
-                    <p class="text-xs text-muted-text mt-2 leading-relaxed">لا يحتاج للري إلا عند جفاف التربة تماماً، ممتاز جداً لتنقية الهواء والفوائد الطبية.</p>
+                <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border shadow-sm flex flex-col justify-between">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                        <h3 class="font-bold text-accent-green text-sm" data-i18n="aloeTitle">الصبار (ألوفيرا)</h3>
+                        <p class="text-xs text-muted-text mt-2 leading-relaxed" data-i18n="aloeDesc">لا يحتاج للري إلا عند جفاف التربة تماماً، ممتاز جداً لتنقية الهواء والفوائد الطبية.</p>
+                    </div>
+                    <button onclick="addToCart('شتلة صبار ألوفيرا', 35)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition-all active:scale-95" data-i18n="orderAloe">طلب شتلة (35 ج.م)</button>
                 </div>
-                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
-                    <h3 class="font-bold text-accent-green text-base">البصل الأخضر</h3>
-                    <p class="text-xs text-muted-text mt-2 leading-relaxed">يمكنك زراعته في الماء فقط من بقايا البصل بالمطبخ وسينمو خلال أيام قليلة!</p>
+                <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border shadow-sm flex flex-col justify-between">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1587049352846-4a222e784d38?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                        <h3 class="font-bold text-accent-green text-sm" data-i18n="onionTitle">البصل الأخضر المنزلي</h3>
+                        <p class="text-xs text-muted-text mt-2 leading-relaxed" data-i18n="onionDesc">يمكنك زراعته في الماء أو تربة خفيفة من بقايا المطبخ وسينمو خلال أيام!</p>
+                    </div>
+                    <button onclick="addToCart('بذور بصل أخضر', 15)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition-all active:scale-95" data-i18n="orderOnion">طلب بذور (15 ج.م)</button>
                 </div>
             </div>
         </div>
 
-        <!-- 2.2 SHADE PLANTS -->
+        <!-- 5.2 SHADE PLANTS -->
         <div id="tab-suggestions-shade" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🌲 نباتات ظل منزلية</h2>
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="shadePlants">نباتات ظل منزلية</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
-                    <h3 class="font-bold text-accent-green text-base">نبات البوتس (Pothos)</h3>
-                    <p class="text-xs text-muted-text mt-2 leading-relaxed">ملك نباتات الظل، يتسلق بحجم جميل ويعيش في الضوء الضعيف بداخل الغرف.</p>
+                <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border shadow-sm flex flex-col justify-between">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                        <h3 class="font-bold text-accent-green text-sm" data-i18n="pothosTitle">نبات البوتس (Pothos)</h3>
+                        <p class="text-xs text-muted-text mt-2 leading-relaxed" data-i18n="pothosDesc">ملك نباتات الظل، يتسلق بحجم جميل ويعيش في الضوء الضعيف بداخل الغرف.</p>
+                    </div>
+                    <button onclick="addToCart('شتلة بوتس', 40)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition-all active:scale-95" data-i18n="orderPothos">طلب شتلة (40 ج.م)</button>
                 </div>
-                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1593482892290-f54927ae1bf6?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
-                    <h3 class="font-bold text-accent-green text-base">سانسيفيريا (جلد النمر)</h3>
-                    <p class="text-xs text-muted-text mt-2 leading-relaxed">يعيش في أصعب الظروف ويفرز الأكسجين ليلاً، تحفة ديكورية ممتازة.</p>
+                <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border shadow-sm flex flex-col justify-between">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1593482892290-f54927ae1bf6?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                        <h3 class="font-bold text-accent-green text-sm" data-i18n="snakeTitle">سانسيفيريا (جلد النمر)</h3>
+                        <p class="text-xs text-muted-text mt-2 leading-relaxed" data-i18n="snakeDesc">يعيش في أصعب الظروف ويفرز الأكسجين ليلاً، تحفة ديكورية ممتازة.</p>
+                    </div>
+                    <button onclick="addToCart('شتلة سانسيفيريا', 60)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition-all active:scale-95" data-i18n="orderSnake">طلب شتلة (60 ج.م)</button>
                 </div>
             </div>
         </div>
 
-        <!-- 2.3 AROMATIC PLANTS -->
+        <!-- 5.3 AROMATIC PLANTS -->
         <div id="tab-suggestions-aromatic" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🌀 نباتات معطرة وعطرية</h2>
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="aromaticPlants">نباتات معطرة وعطرية</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
-                    <h3 class="font-bold text-accent-green text-base">الريحان الإيطالي العطري</h3>
-                    <p class="text-xs text-muted-text mt-2 leading-relaxed">رائحة فواحة جداً في البلكونة وممتاز للطهي والأطباق الطازجة.</p>
+                <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border shadow-sm flex flex-col justify-between">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                        <h3 class="font-bold text-accent-green text-sm" data-i18n="basilTitle">الريحان الإيطالي العطري</h3>
+                        <p class="text-xs text-muted-text mt-2 leading-relaxed" data-i18n="basilDesc">رائحة فواحة جداً في البلكونة وممتاز للطهي والأطباق الطازجة.</p>
+                    </div>
+                    <button onclick="addToCart('شتلة ريحان', 20)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition-all active:scale-95" data-i18n="orderBasil">طلب شتلة (20 ج.م)</button>
                 </div>
-                <div class="bg-card-bg p-4 rounded-2xl border border-card-border shadow-sm">
-                    <img src="https://images.unsplash.com/photo-1528183429752-a97d0bf99b5a?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
-                    <h3 class="font-bold text-accent-green text-base">اللافندر (الخزامى)</h3>
-                    <p class="text-xs text-muted-text mt-2 leading-relaxed">يساعد على الاسترخاء وتقليل التوتر العصبي برائحته الهادئة.</p>
+                <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border shadow-sm flex flex-col justify-between">
+                    <div>
+                        <img src="https://images.unsplash.com/photo-1528183429752-a97d0bf99b5a?auto=format&fit=crop&w=400&q=80" class="w-full h-40 object-cover rounded-xl mb-3">
+                        <h3 class="font-bold text-accent-green text-sm" data-i18n="lavenderTitle">اللافندر (الخزامى)</h3>
+                        <p class="text-xs text-muted-text mt-2 leading-relaxed" data-i18n="lavenderDesc">يساعد على الاسترخاء وتقليل التوتر العصبي برائحته الهادئة.</p>
+                    </div>
+                    <button onclick="addToCart('شتلة لافندر', 50)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition-all active:scale-95" data-i18n="orderLavender">طلب شتلة (50 ج.م)</button>
                 </div>
             </div>
         </div>
 
-        <!-- 2.4 BASICS -->
+        <!-- 5.4 BASICS -->
         <div id="tab-suggestions-basics" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">📖 أساسيات الزراعة المنزلية</h2>
-            <div class="bg-card-bg p-6 rounded-2xl border border-card-border space-y-4">
-                <h3 class="font-bold text-accent-green text-base">الخطوات الذهبية للبدء:</h3>
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="basics">أساسيات الزراعة المنزلية</h2>
+            <div class="animated-card bg-card-bg/80 p-6 rounded-2xl border border-card-border space-y-4 shadow-sm">
+                <h3 class="font-bold text-accent-green text-sm" data-i18n="goldenSteps">الخطوات الذهبية للبدء:</h3>
                 <ul class="list-disc list-inside text-xs text-muted-text space-y-2 leading-relaxed">
-                    <li>اختيار تربة خفيفة جيدة التصريف (مثل البيتموس المخلوط بالبيرلايت).</li>
-                    <li>تأكد دائماً من وجود فتحات تصريف للماء الزائد في أسفل الأصص.</li>
-                    <li>لا تفرط في الري، افحص التربة بعمق 2 سم أولاً قبل إضافة الماء.</li>
+                    <li data-i18n="step1">اختيار تربة خفيفة جيدة التصريف (مثل البيتموس المخلوط بالبيرلايت).</li>
+                    <li data-i18n="step2">تأكد دائماً من وجود فتحات تصريف للماء الزائد في أسفل الأصص.</li>
+                    <li data-i18n="step3">لا تفرط في الري، افحص التربة بعمق 2 سم أولاً قبل إضافة الماء.</li>
                 </ul>
             </div>
         </div>
 
-        <!-- ==================== TAB 3: STORE PAGES ==================== -->
-        <!-- 3.1 STORE TOOLS -->
+        <!-- ==================== TAB 6: STORE PAGES ==================== -->
+        <!-- 6.1 STORE TOOLS -->
         <div id="tab-store-tools" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🛠️ الأدوات ومستلزمات الزراعة</h2>
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="tools">الأدوات ومستلزمات الزراعة</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-card-bg p-4 rounded-2xl border border-card-border flex flex-col justify-between shadow-sm">
+                <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border flex flex-col justify-between shadow-sm">
                     <div>
                         <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=400&q=80" class="w-full h-44 object-cover rounded-xl mb-3">
-                        <h3 class="font-bold text-accent-green text-base">طقم أدوات زراعة منزلية (3 قطع)</h3>
-                        <p class="text-xs text-muted-text my-2">مجرفة ومشط ومبرد صغير مخصص للبلكونات.</p>
-                        <span class="font-bold text-accent-green text-sm">85 ج.م</span>
+                        <h3 class="font-bold text-accent-green text-sm" data-i18n="toolSetTitle">طقم أدوات زراعة منزلية (3 قطع)</h3>
+                        <p class="text-xs text-muted-text my-2" data-i18n="toolSetDesc">مجرفة ومشط ومبرد صغير مخصص للبلكونات والأصص.</p>
+                        <span class="font-bold text-accent-green text-xs" data-i18n="toolSetPrice">85 ج.م</span>
                     </div>
-                    <button onclick="addToCart('طقم أدوات زراعة منزلية', 85)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition shadow-sm">
+                    <button onclick="addToCart('طقم أدوات زراعة منزلية', 85)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition-all active:scale-95 shadow-sm" data-i18n="addToCartBtn">
                         إضافة للسلة
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- 3.2 STORE SEEDS (BULK) -->
+        <!-- 6.2 STORE SEEDS -->
         <div id="tab-store-seeds" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🫙 بذور بالكميات المناسبة (تجزئة موفرة)</h2>
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="seeds">بذور بالكميات المناسبة (تجزئة موفرة)</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-card-bg p-4 rounded-2xl border border-card-border flex flex-col justify-between shadow-sm">
+                <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border flex flex-col justify-between shadow-sm">
                     <div>
                         <img src="https://images.unsplash.com/photo-1592417817098-8f3d691a4bf5?auto=format&fit=crop&w=400&q=80" class="w-full h-44 object-cover rounded-xl mb-3">
-                        <h3 class="font-bold text-accent-green text-base">ظرف بذور جرجير طازج (عينة منزلية)</h3>
-                        <p class="text-xs text-muted-text my-2">كمية تجزئة موفرة تناسب زراعة أحواض البلكونة بدون هدر.</p>
-                        <span class="font-bold text-accent-green text-sm">15 ج.م</span>
+                        <h3 class="font-bold text-accent-green text-sm" data-i18n="arugulaTitle">ظرف بذور جرجير طازج (عينة منزلية)</h3>
+                        <p class="text-xs text-muted-text my-2" data-i18n="arugulaDesc">كمية تجزئة موفرة تناسب زراعة أحواض البلكونة بدون هدر.</p>
+                        <span class="font-bold text-accent-green text-xs" data-i18n="arugulaPrice">15 ج.م</span>
                     </div>
-                    <button onclick="addToCart('بذور جرجير تجزئة', 15)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition shadow-sm">
+                    <button onclick="addToCart('بذور جرجير تجزئة', 15)" class="mt-4 w-full bg-accent-green text-white py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition-all active:scale-95 shadow-sm" data-i18n="addToCartBtn">
                         إضافة للسلة
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- ==================== TAB 4: DICTIONARY ==================== -->
+        <!-- ==================== TAB 7: DICTIONARY ==================== -->
         <div id="tab-dictionary" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">القاموس الزراعي الشامل 📖</h2>
-            <div class="bg-card-bg p-6 rounded-2xl border border-card-border space-y-4 shadow-sm">
-                <input id="dictQuery" type="text" onkeyup="filterDict()" placeholder="ابحث باسم النبات في القاموس..." class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="dictionary">القاموس الزراعي الشامل</h2>
+            <div class="animated-card bg-card-bg/80 p-6 rounded-2xl border border-card-border space-y-4 shadow-sm">
+                <input id="dictQuery" type="text" placeholder="ابحث باسم النبات في القاموس..." data-i18n-placeholder="dictPlaceholder" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none transition-all">
                 <div id="dictResults" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="p-4 bg-sidebar-bg rounded-xl border border-border-color">
-                        <h4 class="font-bold text-accent-green text-base mb-1">🌿 النعناع</h4>
-                        <p class="text-xs text-muted-text"><strong>الري:</strong> يومي أو عند جفاف التربة السطحية.</p>
-                        <p class="text-xs text-muted-text"><strong>الإضاءة:</strong> شمس متوسطة / غير مباشرة.</p>
+                    <div class="p-4 bg-sidebar-bg rounded-xl border border-border-color transition hover:shadow-sm">
+                        <h4 class="font-bold text-accent-green text-sm mb-1" data-i18n="dictMint">النعناع البلدي</h4>
+                        <p class="text-xs text-muted-text"><strong data-i18n="dictWaterLbl">الري:</strong> <span data-i18n="dictMintWater">يومي أو عند جفاف التربة السطحية.</span></p>
+                        <p class="text-xs text-muted-text"><strong data-i18n="dictLightLbl">الإضاءة:</strong> <span data-i18n="dictMintLight">شمس متوسطة / غير مباشرة.</span></p>
                     </div>
-                    <div class="p-4 bg-sidebar-bg rounded-xl border border-border-color">
-                        <h4 class="font-bold text-accent-green text-base mb-1">🪴 البوتس</h4>
-                        <p class="text-xs text-muted-text"><strong>الري:</strong> كل 5-7 أيام عند جفاف التربة.</p>
-                        <p class="text-xs text-muted-text"><strong>الإضاءة:</strong> ضوء إضاءة داخلية (ظل).</p>
+                    <div class="p-4 bg-sidebar-bg rounded-xl border border-border-color transition hover:shadow-sm">
+                        <h4 class="font-bold text-accent-green text-sm mb-1" data-i18n="dictPothos">البوتس المنزلي</h4>
+                        <p class="text-xs text-muted-text"><strong data-i18n="dictWaterLbl">الري:</strong> <span data-i18n="dictPothosWater">كل 5-7 أيام عند جفاف التربة.</span></p>
+                        <p class="text-xs text-muted-text"><strong data-i18n="dictLightLbl">الإضاءة:</strong> <span data-i18n="dictPothosLight">ضوء إضاءة داخلية (ظل).</span></p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ==================== TAB 5: COMMUNITY ==================== -->
-        <div id="tab-community" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">ملتقى محبي الزراعة 🌱</h2>
+        <!-- ==================== TAB 8: AI PLANT DOCTOR ==================== -->
+        <div id="tab-doctor" class="tab-content space-y-6">
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="plantDoctor">طبيب النباتات بالذكاء الاصطناعي</h2>
             
-            <div class="bg-card-bg p-4 rounded-2xl border border-card-border space-y-3 shadow-sm">
-                <textarea id="postInput" placeholder="شارك تجربتك الزراعية أو اسأل المجتمع..." class="w-full bg-sidebar-bg p-3 rounded-xl text-xs text-hover-green focus:outline-none border border-border-color resize-none h-20"></textarea>
-                <div class="flex justify-between items-center">
-                    <button class="text-xs text-muted-text hover:text-accent-green">
-                        <i class="fa-solid fa-image ml-1"></i> إضافة صورة
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Upload Area -->
+                <div class="animated-card bg-card-bg/80 p-6 rounded-3xl border border-card-border space-y-4 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-accent-green text-sm mb-1" data-i18n="uploadLeafTitle">قم برفع صورة الورقة المصابة</h3>
+                        <p class="text-xs text-muted-text mb-4" data-i18n="uploadLeafDesc">التقط صورة واضحة للجزء المصاب بالنبتة للتعرف على نوع الفطريات أو المرض فوراً.</p>
+                        
+                        <div id="dropZone" onclick="document.getElementById('plantImageInput').click()" class="border-2 border-dashed border-accent-green/40 rounded-2xl p-8 text-center bg-sidebar-bg/60 hover:bg-sidebar-bg transition cursor-pointer relative overflow-hidden">
+                            <input type="file" id="plantImageInput" accept="image/*" onchange="previewPlantImage(event)" class="hidden">
+                            
+                            <div id="uploadPrompt" class="space-y-2">
+                                <i class="fa-solid fa-cloud-arrow-up text-3xl text-accent-green"></i>
+                                <p class="text-xs font-bold text-accent-green" data-i18n="clickUpload">اضغط هنا لرفع صورة أو اسحب الصورة هنا</p>
+                                <span class="text-[10px] text-muted-text" data-i18n="formatSupport">يدعم صيغ JPG, PNG</span>
+                            </div>
+
+                            <div id="imagePreviewContainer" class="hidden relative">
+                                <img id="plantImagePreview" src="" class="max-h-48 rounded-xl mx-auto border border-border-color object-cover">
+                                <div id="scanLaser" class="scan-laser hidden"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="analyzeBtn" onclick="analyzePlantHealth()" class="w-full bg-accent-green text-white font-bold text-xs py-3 rounded-xl hover:bg-hover-green transition duration-200 active:scale-95 shadow-sm">
+                        <i class="fa-solid fa-microscope ml-1"></i> <span data-i18n="analyzeBtn">تحليل واستكشاف المرض</span>
                     </button>
-                    <button onclick="publishPost()" class="bg-accent-green text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-hover-green transition shadow-sm">
+                </div>
+
+                <!-- Analysis Result Card -->
+                <div id="diagnosisCard" class="animated-card bg-card-bg/80 p-6 rounded-3xl border border-card-border shadow-sm flex flex-col justify-between hidden">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center border-b border-card-border pb-3">
+                            <h3 class="font-bold text-accent-green text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-file-medical text-accent-green"></i> <span data-i18n="diagResultTitle">نتيجة التشخيص الطبي</span>
+                            </h3>
+                            <span id="confidenceBadge" class="bg-accent-green text-white text-[10px] px-2.5 py-1 rounded-full font-mono">96%</span>
+                        </div>
+
+                        <div>
+                            <span class="text-[10px] text-muted-text block" data-i18n="diseaseDetected">المرض المكتشف:</span>
+                            <h4 id="diseaseName" class="font-bold text-base text-accent-green" data-i18n="diseaseNameVal">البقع الفطرية السوداء (Black Spot)</h4>
+                        </div>
+
+                        <div>
+                            <span class="text-[10px] text-muted-text block" data-i18n="symptomsObserved">الأعراض المرصودة:</span>
+                            <p id="diseaseSymptoms" class="text-xs text-hover-green leading-relaxed mt-1" data-i18n="diseaseSymptomsVal">بقع دائرية بنية داكنة مع اصفرار حول أطراف الورقة بسبب الرطوبة العالية وتجمع المياه.</p>
+                        </div>
+
+                        <div class="bg-sidebar-bg p-3.5 rounded-2xl border border-border-color space-y-1.5">
+                            <span class="text-xs font-bold text-accent-green block" data-i18n="curePlanTitle">خطة العلاج والوقاية:</span>
+                            <ul id="treatmentSteps" class="list-disc list-inside text-xs text-muted-text space-y-1 leading-relaxed">
+                                <li data-i18n="cureStep1">قص الأوراق المصابة بشدة والتخلص منها فوراً.</li>
+                                <li data-i18n="cureStep2">رش النبات بمبيد فطري نحاسي مرتين أسبوعياً.</li>
+                                <li data-i18n="cureStep3">تجنب ري الأوراق مباشرة والري في الصباح الباكر فقط.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <button onclick="handleSaveReport()" class="mt-4 w-full bg-sidebar-bg text-accent-green font-bold text-xs py-2.5 rounded-xl hover:bg-active-bg transition border border-border-color" data-i18n="saveMedicalRecord">
+                        حفظ التقرير في سجلي الطبي
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 9: COMMUNITY ==================== -->
+        <div id="tab-community" class="tab-content space-y-6">
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="community">ملتقى محبي الزراعة</h2>
+            
+            <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border space-y-3 shadow-sm">
+                <textarea id="postInput" placeholder="شارك تجربتك الزراعية أو اسأل المجتمع..." data-i18n-placeholder="postPlaceholder" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs text-hover-green focus:outline-none border border-border-color resize-none h-20 transition"></textarea>
+                <div class="flex justify-between items-center">
+                    <button class="text-xs text-muted-text hover:text-accent-green transition flex items-center gap-1">
+                        <i class="fa-solid fa-image"></i> <span data-i18n="addImage">إضافة صورة</span>
+                    </button>
+                    <button onclick="publishPost()" class="bg-accent-green text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-hover-green transition-all active:scale-95 shadow-sm" data-i18n="publishBtn">
                         نشر
                     </button>
                 </div>
             </div>
 
             <div id="feedContainer" class="space-y-4">
-                <div class="bg-card-bg p-4 rounded-2xl border border-card-border space-y-2 shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-accent-green text-white flex items-center justify-center font-bold text-xs">
-                            أح
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-xs text-accent-green">أحمد محمود</h4>
-                            <span class="text-[10px] text-muted-text">منذ ساعتين</span>
-                        </div>
-                    </div>
-                    <p class="text-xs text-hover-green leading-relaxed">نجحت تجربة زراعة النعناع في البلكونة باستخدام أصص صغيرة! شكراً لكم على نصائح الري.</p>
-                    <div class="flex gap-4 pt-2 border-t border-card-border text-xs text-muted-text">
-                        <button class="hover:text-accent-green"><i class="fa-regular fa-heart ml-1"></i> إعجاب</button>
-                        <button class="hover:text-accent-green"><i class="fa-regular fa-comment ml-1"></i> تعليق</button>
-                    </div>
-                </div>
+                <!-- سيتم جلب المنشورات من الداتابيز هنا -->
             </div>
         </div>
 
-        <!-- ==================== TAB 6: CHALLENGES ==================== -->
+        <!-- ==================== TAB 10: CHALLENGES ==================== -->
         <div id="tab-challenges" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">🏆 التحديات والمراكز</h2>
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="challenges">التحديات والمراكز</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-card-bg p-5 rounded-2xl border border-card-border space-y-3">
-                    <h3 class="font-bold text-accent-green text-base">تحدي زراعة 30 يوم</h3>
-                    <p class="text-xs text-muted-text leading-relaxed">تابع تطور نباتك يومياً بالصور مع مجتمع الزراعة واكسب نقاط التحدي!</p>
-                    <button onclick="alert('تم انضمامك للتحدي!')" class="bg-accent-green text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition">الانضمام للتحدي</button>
+                <div class="animated-card bg-card-bg/80 p-5 rounded-2xl border border-card-border space-y-3 shadow-sm">
+                    <h3 class="font-bold text-accent-green text-sm" data-i18n="challenge30Title">تحدي زراعة 30 يوم</h3>
+                    <p class="text-xs text-muted-text leading-relaxed" data-i18n="challenge30Desc">تابع تطور نباتك يومياً بالصور مع مجتمع الزراعة واكسب نقاط التحدي!</p>
+                    <button onclick="handleJoinChallenge()" class="bg-accent-green text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition-all active:scale-95 shadow-sm" data-i18n="joinChallengeBtn">الانضمام للتحدي</button>
                 </div>
-                <div class="bg-card-bg p-5 rounded-2xl border border-card-border space-y-3">
-                    <h3 class="font-bold text-accent-green text-base">قائمة المتصدرين 🥇</h3>
+                <div class="animated-card bg-card-bg/80 p-5 rounded-2xl border border-card-border space-y-3 shadow-sm">
+                    <h3 class="font-bold text-accent-green text-sm" data-i18n="leaderboardTitle">قائمة المتصدرين</h3>
                     <div class="space-y-2 text-xs text-hover-green">
-                        <div class="flex justify-between border-b pb-1"><span>1. أسرار أحمد</span> <span class="font-bold text-accent-green">1450 نقطة</span></div>
-                        <div class="flex justify-between border-b pb-1"><span>2. م. محمد علي</span> <span class="font-bold text-accent-green">1200 نقطة</span></div>
+                        <div class="flex justify-between border-b pb-1"><span>1. أسرار أحمد</span> <span class="font-bold text-accent-green">1450 pts</span></div>
+                        <div class="flex justify-between border-b pb-1"><span>2. م. محمد علي</span> <span class="font-bold text-accent-green">1200 pts</span></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- ==================== TAB 7: CONTACT ==================== -->
+        <!-- ==================== TAB 11: CONTACT ==================== -->
         <div id="tab-contact" class="tab-content space-y-6">
-            <h2 class="text-2xl font-bold text-accent-green border-b border-border-color pb-3">تواصل معنا</h2>
-            <div class="bg-card-bg p-6 rounded-2xl border border-card-border max-w-xl mx-auto space-y-4 shadow-sm">
+            <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="contact">تواصل معنا</h2>
+            <div class="animated-card bg-card-bg/80 p-6 rounded-2xl border border-card-border max-w-xl mx-auto space-y-4 shadow-sm">
                 <div>
-                    <label class="block text-xs font-bold text-accent-green mb-1">الاسم الكامل</label>
-                    <input type="text" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                    <label class="block text-xs font-bold text-accent-green mb-1" data-i18n="fullNameLbl">الاسم الكامل</label>
+                    <input type="text" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none transition">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-accent-green mb-1">البريد الإلكتروني</label>
-                    <input type="email" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                    <label class="block text-xs font-bold text-accent-green mb-1" data-i18n="emailLbl">البريد الإلكتروني</label>
+                    <input type="email" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none transition">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-accent-green mb-1">رسالتك أو استفسارك</label>
-                    <textarea class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none h-28 resize-none"></textarea>
+                    <label class="block text-xs font-bold text-accent-green mb-1" data-i18n="msgLbl">رسالتك أو استفسارك</label>
+                    <textarea class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none h-28 resize-none transition"></textarea>
                 </div>
-                <button onclick="alert('تم إرسال رسالتك بنجاح!')" class="w-full bg-accent-green text-white font-bold text-xs py-3 rounded-xl hover:bg-hover-green transition shadow-sm">
+                <button onclick="handleSendMsg()" class="w-full bg-accent-green text-white font-bold text-xs py-3 rounded-xl hover:bg-hover-green transition-all active:scale-95 shadow-sm" data-i18n="sendMsgBtn">
                     إرسال الرسالة
                 </button>
             </div>
@@ -642,26 +954,78 @@
 
     <!-- ==================== MODALS ==================== -->
 
-    <!-- Ask AI Modal -->
-    <div id="aiModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-main-bg border border-border-color rounded-3xl w-full max-w-md p-6 relative shadow-2xl flex flex-col h-[500px]">
-            <button onclick="closeModal('aiModal')" class="absolute top-4 left-4 text-muted-text hover:text-hover-green">
+    <!-- Auth Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black/40 modal-overlay z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-content bg-main-bg border border-border-color rounded-3xl w-full max-w-sm p-6 relative shadow-2xl space-y-4">
+            <button onclick="closeModal('authModal')" class="absolute top-4 left-4 text-muted-text hover:text-hover-green transition">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
-            <div class="flex items-center gap-2 pb-4 border-b border-border-color">
-                <i class="fa-solid fa-wand-magic-sparkles text-accent-green"></i>
-                <h3 class="font-bold text-accent-green text-base">مساعد الزراعة الذكي (Ask AI)</h3>
+            <div id="loginFormContainer" class="space-y-4">
+                <h3 class="font-bold text-accent-green text-sm border-b border-border-color pb-2" data-i18n="myAccount">تسجيل الدخول إلى حسابك</h3>
+                <div>
+                    <label class="block text-xs font-bold text-accent-green mb-1" data-i18n="emailLbl">البريد الإلكتروني</label>
+                    <input id="loginEmail" type="email" placeholder="name@example.com" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-accent-green mb-1" data-i18n="passLbl">كلمة المرور</label>
+                    <input id="loginPass" type="password" placeholder="••••••••" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                </div>
+                <button onclick="handleLogin()" class="w-full bg-accent-green text-white text-xs font-bold py-3 rounded-xl hover:bg-hover-green transition active:scale-95" data-i18n="loginBtn">تسجيل الدخول</button>
+                <p class="text-xs text-center text-muted-text pt-2"><span data-i18n="noAccount">ليس لديك حساب؟</span> <span onclick="toggleAuthMode()" class="text-accent-green font-bold cursor-pointer underline" data-i18n="createAccount">إنشاء حساب جديد</span></p>
+            </div>
+
+            <div id="registerFormContainer" class="space-y-4 hidden">
+                <h3 class="font-bold text-accent-green text-sm border-b border-border-color pb-2" data-i18n="createAccountTitle">إنشاء حساب جديد</h3>
+                <div>
+                    <label class="block text-xs font-bold text-accent-green mb-1" data-i18n="fullNameLbl">الاسم الكامل</label>
+                    <input id="regName" type="text" placeholder="أحمد محمد" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-accent-green mb-1" data-i18n="emailLbl">البريد الإلكتروني</label>
+                    <input id="regEmail" type="email" placeholder="name@example.com" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-accent-green mb-1" data-i18n="passLbl">كلمة المرور</label>
+                    <input id="regPass" type="password" placeholder="••••••••" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none">
+                </div>
+                <button onclick="handleRegister()" class="w-full bg-accent-green text-white text-xs font-bold py-3 rounded-xl hover:bg-hover-green transition active:scale-95" data-i18n="registerBtn">إنشاء الحساب</button>
+                <p class="text-xs text-center text-muted-text pt-2"><span data-i18n="hasAccount">لديك حساب بالفعل؟</span> <span onclick="toggleAuthMode()" class="text-accent-green font-bold cursor-pointer underline" data-i18n="loginBtn">تسجيل الدخول</span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ask AI Modal -->
+    <div id="aiModal" class="fixed inset-0 bg-black/40 modal-overlay z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-content bg-main-bg border border-border-color rounded-3xl w-full max-w-lg p-6 relative shadow-2xl flex flex-col h-[520px]">
+            <button onclick="closeModal('aiModal')" class="absolute top-4 left-4 text-muted-text hover:text-hover-green transition">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="flex items-center gap-2 pb-3 border-b border-border-color">
+                <div class="w-8 h-8 rounded-full bg-accent-green/10 flex items-center justify-center text-accent-green">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-accent-green text-sm" data-i18n="aiTitle">مساعد الزراعة الذكي (Ask AI)</h3>
+                    <span class="text-[10px] text-muted-text" data-i18n="aiSubtitle">متصل ومستعد للإجابة عن العناية بالأنواع المختلفة</span>
+                </div>
             </div>
             
-            <div id="aiChatBox" class="flex-1 overflow-y-auto my-4 space-y-3 p-2 text-xs">
-                <div class="bg-sidebar-bg p-3 rounded-2xl max-w-[85%] text-hover-green leading-relaxed border border-border-color/50">
-                    مرحباً بك! أنا مستشارك الزراعي بالذكاء الاصطناعي. كيف يمكنني مساعدتك في حديقتك اليوم؟
+            <div id="aiChatBox" class="flex-1 overflow-y-auto my-3 space-y-3 p-2 text-xs">
+                <div class="bg-sidebar-bg p-3 rounded-2xl max-w-[85%] text-hover-green leading-relaxed border border-border-color/50 shadow-sm" data-i18n="aiGreeting">
+                    مرحباً بك! أنا مستشارك الزراعي الذكي. كيف يمكنني مساعدتك في ري أو تسميد أو تشخيص حالة نباتاتك اليوم؟
                 </div>
             </div>
 
+            <!-- Quick Pill Suggestions -->
+            <div class="flex gap-2 overflow-x-auto pb-2 text-[11px]">
+                <button onclick="sendQuickAiQuery('كيف أعتني بنبات النعناع؟')" class="bg-card-bg hover:bg-active-bg text-accent-green border border-card-border px-3 py-1 rounded-full whitespace-nowrap transition" data-i18n="pillMint">العناية بالنعناع</button>
+                <button onclick="sendQuickAiQuery('ما سبب أصفرار أوراق النباتات؟')" class="bg-card-bg hover:bg-active-bg text-accent-green border border-card-border px-3 py-1 rounded-full whitespace-nowrap transition" data-i18n="pillYellow">الأوراق الصفراء</button>
+                <button onclick="sendQuickAiQuery('كيف أروي صبار الألوفيرا؟')" class="bg-card-bg hover:bg-active-bg text-accent-green border border-card-border px-3 py-1 rounded-full whitespace-nowrap transition" data-i18n="pillAloe">ري الصبار</button>
+            </div>
+
             <div class="flex gap-2 pt-2 border-t border-border-color">
-                <input id="aiInput" type="text" placeholder="اسأل المساعد الذكي شيئاً..." class="flex-1 bg-card-bg px-4 py-2.5 rounded-full text-xs border border-border-color focus:outline-none">
-                <button onclick="sendAiMessage()" class="bg-accent-green text-white px-4 py-2.5 rounded-full text-xs font-bold hover:bg-hover-green transition shadow-sm">
+                <input id="aiInput" type="text" onkeydown="if(event.key==='Enter') sendAiMessage()" placeholder="اسأل المساعد الذكي شيئاً..." data-i18n-placeholder="aiPlaceholder" class="flex-1 bg-card-bg px-4 py-2.5 rounded-full text-xs border border-border-color focus:outline-none transition">
+                <button onclick="sendAiMessage()" class="bg-accent-green text-white px-5 py-2.5 rounded-full text-xs font-bold hover:bg-hover-green transition-all active:scale-95 shadow-sm" data-i18n="sendBtn">
                     إرسال
                 </button>
             </div>
@@ -669,44 +1033,743 @@
     </div>
 
     <!-- Video Modal -->
-    <div id="videoModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-main-bg border border-border-color rounded-3xl w-full max-w-2xl p-6 relative shadow-2xl space-y-4">
-            <button onclick="closeModal('videoModal')" class="absolute top-4 left-4 text-muted-text hover:text-hover-green">
+    <div id="videoModal" class="fixed inset-0 bg-black/50 modal-overlay z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-content bg-main-bg border border-border-color rounded-3xl w-full max-w-2xl p-6 relative shadow-2xl space-y-4">
+            <button onclick="closeModal('videoModal')" class="absolute top-4 left-4 text-muted-text hover:text-hover-green transition">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
-            <h3 id="modalVideoTitle" class="font-bold text-accent-green text-base">عنوان الفيديو</h3>
+            <h3 id="modalVideoTitle" class="font-bold text-accent-green text-sm">عنوان الفيديو</h3>
             <div class="bg-black aspect-video rounded-2xl flex items-center justify-center relative overflow-hidden shadow-inner">
-                <i class="fa-solid fa-circle-play text-white text-5xl opacity-80 cursor-pointer hover:scale-110 transition"></i>
+                <i class="fa-solid fa-circle-play text-white text-5xl opacity-80 cursor-pointer hover:scale-110 transition-transform"></i>
                 <span id="modalVideoTime" class="absolute bottom-3 left-3 bg-black/70 text-white text-xs px-2 py-0.5 rounded font-mono">00:00</span>
             </div>
         </div>
     </div>
 
     <!-- Shopping Cart Modal -->
-    <div id="cartModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-main-bg border border-border-color rounded-3xl w-full max-w-md p-6 relative shadow-2xl space-y-4">
-            <button onclick="closeModal('cartModal')" class="absolute top-4 left-4 text-muted-text hover:text-hover-green">
+    <div id="cartModal" class="fixed inset-0 bg-black/40 modal-overlay z-50 hidden flex items-center justify-center p-4">
+        <div class="modal-content bg-main-bg border border-border-color rounded-3xl w-full max-w-md p-6 relative shadow-2xl space-y-4">
+            <button onclick="closeModal('cartModal')" class="absolute top-4 left-4 text-muted-text hover:text-hover-green transition">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
-            <h3 class="font-bold text-accent-green text-base border-b border-border-color pb-2">سلة المستلزمات</h3>
+            <h3 class="font-bold text-accent-green text-sm border-b border-border-color pb-2" data-i18n="cart">سلة المستلزمات</h3>
             <div id="cartItemsList" class="space-y-2 max-h-60 overflow-y-auto text-xs text-hover-green">
-                <p class="text-muted-text text-center py-4">السلة فارغة حالياً</p>
+                <p class="text-muted-text text-center py-4" data-i18n="emptyCart">السلة فارغة حالياً</p>
             </div>
             <div class="pt-2 border-t border-border-color flex justify-between items-center">
-                <span class="font-bold text-xs text-accent-green">الإجمالي: <span id="cartTotal">0</span> ج.م</span>
-                <button onclick="alert('تم إرسال طلبك بنجاح!')" class="bg-accent-green text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-hover-green transition shadow-sm">
+                <span class="font-bold text-xs text-accent-green"><span data-i18n="totalLbl">الإجمالي:</span> <span id="cartTotal">0</span> <span data-i18n="currency">ج.م</span></span>
+                <button onclick="handleCheckout()" class="bg-accent-green text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-hover-green transition-all active:scale-95 shadow-sm" data-i18n="checkoutBtn">
                     إتمام الشراء
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+    <!-- ==================== JAVASCRIPT & BACKEND FETCH INTEGRATION ==================== -->
     <script>
-        let cart = [];
-        let isAudioMuted = true;
+        const API_BASE = 'http://127.0.0.1:8000';
 
-        // Accordion Controller
+        // BACKGROUND ANIMATED CANVAS PARTICLES
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const particles = Array.from({ length: 35 }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            radius: Math.random() * 3 + 1,
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: (Math.random() - 0.5) * 0.4,
+            alpha: Math.random() * 0.5 + 0.2
+        }));
+
+        function drawBackground() {
+            ctx.clearRect(0, 0, width, height);
+
+            particles.forEach((p, i) => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(49, 71, 49, ${p.alpha})`;
+                ctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(49, 71, 49, ${0.15 * (1 - dist / 120)})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            requestAnimationFrame(drawBackground);
+        }
+        drawBackground();
+
+        // Comprehensive Bilingual Translation Dictionary (100% Full i18n)
+        const translations = {
+            ar: {
+                appTitle: "الزراعة الرقمية",
+                suggestions: "اقتراحات",
+                schedule: "جدول وتنبيهات الري",
+                calculator: "حاسبة التربة والأسمدة",
+                easyPlants: "نباتات سهلة الزراعة",
+                shadePlants: "نباتات ظل",
+                aromaticPlants: "نباتات معطرة",
+                basics: "أساسيات الزراعة",
+                store: "المتجر الزراعي",
+                tools: "الأدوات الزراعية",
+                seeds: "بذور بكميات مناسبة",
+                dictionary: "القاموس الزراعي",
+                searchDict: "ابحث عن حياة النباتات",
+                plantDoctor: "طبيب النباتات",
+                community: "ملتقى محبي الزراعة",
+                challenges: "التحديات والمراكز",
+                settings: "الإعدادات",
+                contact: "تواصل معنا",
+                cart: "السلة",
+                myAccount: "حسابي / تسجيل الدخول",
+                heroSubtitle: "بوابتك الذكية للزراعة المستدامة والحياة الخضراء",
+                searchPlaceholder: "ابحث عن نبات، بذور، أدوات، أو استفسار...",
+                eduVideos: "فيديوهات تعليمية",
+                opportunities: "الفرص المتاحة",
+                noAudio: "بدون موسيقى",
+                locationText: "القاهرة، مصر",
+                weatherStatus: "28°C مشمس",
+                weatherTip: "الجو حار ومعتدل، يُفضل ري النباتات في الصباح الباكر وتجنب ري الأوراق مباشرة أثناء ظهيرة الشمس.",
+                followWaterSchedule: "متابعة جدول الري",
+                opp1Title: "منحة الزراعة المائية",
+                opp1Desc: "منحة دراسية ممولة بالكامل في مجال الزراعة المائية في جامعة دولية",
+                opp2Title: "وظيفة في شركة زراعية",
+                opp2Desc: "تبحث شركة زراعية كبرى عن مهندسين زراعيين للانضمام لفريق العمل",
+                opp3Title: "برنامج تدريبي",
+                opp3Desc: "تدريب عملي في إدارة المزارع الذكية والتقنيات الحديثة",
+                waterToday: "تم الري اليوم",
+                addPlantTitle: "إضافة نبتة لجدول المتابعة",
+                plantNameLabel: "اسم النبتة",
+                plantNamePlaceholder: "مثال: ريحان البلكونة",
+                intervalLabel: "معدل الري المطلوب",
+                daily: "يومياً",
+                every2Days: "كل يومين",
+                every5Days: "كل 5 أيام",
+                weekly: "أسبوعياً",
+                addPlantBtn: "إضافة النبتة للجدول",
+                calcBoxTitle: "احسب الكمية المطلوبة من التربة للأصص والأحواض",
+                calcBoxDesc: "أدخل أبعاد الحوض أو الأصيص لتقوم الحاسبة بمعرفة عدد لترات البيتموس والسماد المطلوبين.",
+                lengthLabel: "الطول (سم)",
+                widthLabel: "العرض (سم)",
+                heightLabel: "الارتفاع (سم)",
+                calcBtn: "حساب الكمية الفورية",
+                resultTitle: "النتيجة والخلطة الخفيفة الموصى بها:",
+                totVol: "حجم التربة الكلي:",
+                peatVol: "البيتموس / التورب:",
+                perliteVol: "البيرلايت (للتصريف):",
+                fertWeight: "السماد العضوي (NPK):",
+                langTitle: "لغة المنصة (Language)",
+                langDesc: "اختر اللغة المفضلة واعرض المحتوى بالكامل",
+                cursorTitle: "مؤشر النبتة التفاعلي (Plant Cursor)",
+                cursorDesc: "تفعيل أيقونة الماوس الخاصة بعالم الزراعة",
+                notifTitle: "تنبيهات الري الدورية",
+                notifDesc: "إرسال إشعارات تذكيرية لمواعيد ري وتسميد النباتات",
+                mintTitle: "نبات النعناع البلدي",
+                mintDesc: "سريع النمو جداً في الأصص الصغيرة، يحتاج ري منتظم وإضاءة شمس غير مباشرة.",
+                orderMint: "طلب شتلة (25 ج.م)",
+                aloeTitle: "الصبار (ألوفيرا)",
+                aloeDesc: "لا يحتاج للري إلا عند جفاف التربة تماماً، ممتاز جداً لتنقية الهواء والفوائد الطبية.",
+                orderAloe: "طلب شتلة (35 ج.م)",
+                onionTitle: "البصل الأخضر المنزلي",
+                onionDesc: "يمكنك زراعته في الماء أو تربة خفيفة من بقايا المطبخ وسينمو خلال أيام!",
+                orderOnion: "طلب بذور (15 ج.م)",
+                pothosTitle: "نبات البوتس (Pothos)",
+                pothosDesc: "ملك نباتات الظل، يتسلق بحجم جميل ويعيش في الضوء الضعيف بداخل الغرف.",
+                orderPothos: "طلب شتلة (40 ج.م)",
+                snakeTitle: "سانسيفيريا (جلد النمر)",
+                snakeDesc: "يعيش في أصعب الظروف ويفرز الأكسجين ليلاً، تحفة ديكورية ممتازة.",
+                orderSnake: "طلب شتلة (60 ج.م)",
+                basilTitle: "الريحان الإيطالي العطري",
+                basilDesc: "رائحة فواحة جداً في البلكونة وممتاز للطهي والأطباق الطازجة.",
+                orderBasil: "طلب شتلة (20 ج.م)",
+                lavenderTitle: "اللافندر (الخزامى)",
+                lavenderDesc: "يساعد على الاسترخاء وتقليل التوتر العصبي برائحته الهادئة.",
+                orderLavender: "طلب شتلة (50 ج.م)",
+                goldenSteps: "الخطوات الذهبية للبدء:",
+                step1: "اختيار تربة خفيفة جيدة التصريف (مثل البيتموس المخلوط بالبيرلايت).",
+                step2: "تأكد دائماً من وجود فتحات تصريف للماء الزائد في أسفل الأصص.",
+                step3: "لا تفرط في الري، افحص التربة بعمق 2 سم أولاً قبل إضافة الماء.",
+                toolSetTitle: "طقم أدوات زراعة منزلية (3 قطع)",
+                toolSetDesc: "مجرفة ومشط ومبرد صغير مخصص للبلكونات والأصص.",
+                toolSetPrice: "85 ج.م",
+                addToCartBtn: "إضافة للسلة",
+                arugulaTitle: "ظرف بذور جرجير طازج (عينة منزلية)",
+                arugulaDesc: "كمية تجزئة موفرة تناسب زراعة أحواض البلكونة بدون هدر.",
+                arugulaPrice: "15 ج.م",
+                dictPlaceholder: "ابحث باسم النبات في القاموس...",
+                dictMint: "النعناع البلدي",
+                dictWaterLbl: "الري:",
+                dictMintWater: "يومي أو عند جفاف التربة السطحية.",
+                dictLightLbl: "الإضاءة:",
+                dictMintLight: "شمس متوسطة / غير مباشرة.",
+                dictPothos: "البوتس المنزلي",
+                dictPothosWater: "كل 5-7 أيام عند جفاف التربة.",
+                dictPothosLight: "ضوء إضاءة داخلية (ظل).",
+                uploadLeafTitle: "قم برفع صورة الورقة المصابة",
+                uploadLeafDesc: "التقط صورة واضحة للجزء المصاب بالنبتة للتعرف على نوع الفطريات أو المرض فوراً.",
+                clickUpload: "اضغط هنا لرفع صورة أو اسحب الصورة هنا",
+                formatSupport: "يدعم صيغ JPG, PNG",
+                analyzeBtn: "تحليل واستكشاف المرض",
+                diagResultTitle: "نتيجة التشخيص الطبي",
+                diseaseDetected: "المرض المكتشف:",
+                symptomsObserved: "الأعراض المرصودة:",
+                curePlanTitle: "خطة العلاج والوقاية:",
+                saveMedicalRecord: "حفظ التقرير في سجلي الطبي",
+                postPlaceholder: "شارك تجربتك الزراعية أو اسأل المجتمع...",
+                addImage: "إضافة صورة",
+                publishBtn: "نشر",
+                likeBtn: "إعجاب",
+                commentBtn: "تعليق",
+                challenge30Title: "تحدي زراعة 30 يوم",
+                challenge30Desc: "تابع تطور نباتك يومياً بالصور مع مجتمع الزراعة واكسب نقاط التحدي!",
+                joinChallengeBtn: "الانضمام للتحدي",
+                leaderboardTitle: "قائمة المتصدرين",
+                fullNameLbl: "الاسم الكامل",
+                emailLbl: "البريد الإلكتروني",
+                passLbl: "كلمة المرور",
+                msgLbl: "رسالتك أو استفسارك",
+                sendMsgBtn: "إرسال الرسالة",
+                loginBtn: "تسجيل الدخول",
+                noAccount: "ليس لديك حساب؟",
+                createAccount: "إنشاء حساب جديد",
+                createAccountTitle: "إنشاء حساب جديد",
+                registerBtn: "إنشاء الحساب",
+                hasAccount: "لديك حساب بالفعل؟",
+                aiTitle: "مساعد الزراعة الذكي (Ask AI)",
+                aiSubtitle: "متصل ومستعد للإجابة عن العناية بالأنواع المختلفة",
+                aiGreeting: "مرحباً بك! أنا مستشارك الزراعي الذكي. كيف يمكنني مساعدتك في ري أو تسميد أو تشخيص حالة نباتاتك اليوم؟",
+                pillMint: "العناية بالنعناع",
+                pillYellow: "الأوراق الصفراء",
+                pillAloe: "ري الصبار",
+                aiPlaceholder: "اسأل المساعد الذكي شيئاً...",
+                sendBtn: "إرسال",
+                emptyCart: "السلة فارغة حالياً",
+                totalLbl: "الإجمالي:",
+                currency: "ج.م",
+                checkoutBtn: "إتمام الشراء"
+            },
+            en: {
+                appTitle: "Digital Agriculture",
+                suggestions: "Suggestions",
+                schedule: "Watering Schedule",
+                calculator: "Soil & Fertilizer Calculator",
+                easyPlants: "Easy-to-Grow Plants",
+                shadePlants: "Shade Plants",
+                aromaticPlants: "Aromatic Plants",
+                basics: "Farming Basics",
+                store: "Agri Store",
+                tools: "Farming Tools",
+                seeds: "Retail Seeds",
+                dictionary: "Plant Dictionary",
+                searchDict: "Explore Plant Life",
+                plantDoctor: "Plant Doctor",
+                community: "Agri Community",
+                challenges: "Challenges & Ranks",
+                settings: "Settings",
+                contact: "Contact Us",
+                cart: "Cart",
+                myAccount: "My Account / Login",
+                heroSubtitle: "Your Smart Gateway to Sustainable Farming & Green Life",
+                searchPlaceholder: "Search for plants, seeds, tools, or queries...",
+                eduVideos: "Educational Videos",
+                opportunities: "Opportunities",
+                noAudio: "Mute Audio",
+                locationText: "Cairo, Egypt",
+                weatherStatus: "28°C Sunny",
+                weatherTip: "The weather is warm. Water plants early in the morning and avoid directly soaking leaves at midday.",
+                followWaterSchedule: "View Water Schedule",
+                opp1Title: "Hydroponics Scholarship",
+                opp1Desc: "Fully funded scholarship in hydroponics & urban farming at an international university.",
+                opp2Title: "Agri-Tech Company Job",
+                opp2Desc: "A major agricultural corporation is recruiting agricultural engineers.",
+                opp3Title: "Smart Farming Program",
+                opp3Desc: "Hands-on training in smart farm management and modern tech.",
+                waterToday: "Watered Today",
+                addPlantTitle: "Add Plant to Care Schedule",
+                plantNameLabel: "Plant Name",
+                plantNamePlaceholder: "e.g. Balcony Basil",
+                intervalLabel: "Required Water Frequency",
+                daily: "Daily",
+                every2Days: "Every 2 days",
+                every5Days: "Every 5 days",
+                weekly: "Weekly",
+                addPlantBtn: "Add Plant to Schedule",
+                calcBoxTitle: "Calculate Required Soil for Pots & Beds",
+                calcBoxDesc: "Enter container dimensions to calculate exact volume of Peat moss and Perlite required.",
+                lengthLabel: "Length (cm)",
+                widthLabel: "Width (cm)",
+                heightLabel: "Height (cm)",
+                calcBtn: "Calculate Instant Volume",
+                resultTitle: "Recommended Mix Result:",
+                totVol: "Total Soil Volume:",
+                peatVol: "Peat Moss / Sphagnum:",
+                perliteVol: "Perlite (Drainage):",
+                fertWeight: "Organic Fertilizer (NPK):",
+                langTitle: "Platform Language",
+                langDesc: "Select preferred language for the whole interface",
+                cursorTitle: "Interactive Plant Cursor",
+                cursorDesc: "Enable botanical custom mouse cursor",
+                notifTitle: "Periodic Water Alerts",
+                notifDesc: "Send periodic notification alerts for plant watering schedules",
+                mintTitle: "Spearmint Plant",
+                mintDesc: "Fast growing in small pots. Requires regular watering and indirect sunlight.",
+                orderMint: "Order Seedling (25 EGP)",
+                aloeTitle: "Aloe Vera",
+                aloeDesc: "Requires watering only when soil dries completely. Excellent air purifier.",
+                orderAloe: "Order Seedling (35 EGP)",
+                onionTitle: "Home Green Onion",
+                onionDesc: "Can be grown in water or light soil from kitchen scraps. Grows in days!",
+                orderOnion: "Order Seeds (15 EGP)",
+                pothosTitle: "Golden Pothos",
+                pothosDesc: "The king of indoor plants. Climbs beautifully and thrives in low indoor light.",
+                orderPothos: "Order Seedling (40 EGP)",
+                snakeTitle: "Snake Plant (Sansevieria)",
+                snakeDesc: "Survives harsh indoor conditions and emits oxygen at night.",
+                orderSnake: "Order Seedling (60 EGP)",
+                basilTitle: "Sweet Italian Basil",
+                basilDesc: "Fragrant aroma on balcony, perfect for cooking fresh dishes.",
+                orderBasil: "Order Seedling (20 EGP)",
+                lavenderTitle: "Lavender",
+                lavenderDesc: "Calming scent helps reduce stress and promotes relaxation.",
+                orderLavender: "Order Seedling (50 EGP)",
+                goldenSteps: "Golden Steps to Begin:",
+                step1: "Choose a light, well-draining soil mix (Peat moss + Perlite).",
+                step2: "Always ensure drainage holes exist at the bottom of containers.",
+                step3: "Do not overwater; inspect soil top 2cm first before adding water.",
+                toolSetTitle: "Home Gardening Tool Set (3-Pcs)",
+                toolSetDesc: "Trowel, cultivator, and hand rake suited for balcony garden pots.",
+                toolSetPrice: "85 EGP",
+                addToCartBtn: "Add to Cart",
+                arugulaTitle: "Fresh Arugula Seed Envelope",
+                arugulaDesc: "Efficient retail quantity suited for home balcony planting without waste.",
+                arugulaPrice: "15 EGP",
+                dictPlaceholder: "Search plant name in dictionary...",
+                dictMint: "Spearmint",
+                dictWaterLbl: "Watering:",
+                dictMintWater: "Daily or when top soil dries.",
+                dictLightLbl: "Light:",
+                dictMintLight: "Medium / Indirect Sunlight.",
+                dictPothos: "Golden Pothos",
+                dictPothosWater: "Every 5-7 days when dry.",
+                dictPothosLight: "Indoor Ambient Light (Shade).",
+                uploadLeafTitle: "Upload Affected Leaf Photo",
+                uploadLeafDesc: "Snap a clear photo of the symptomatic leaf for instant AI fungal/disease scan.",
+                clickUpload: "Click here to upload or drag image here",
+                formatSupport: "Supports JPG, PNG formats",
+                analyzeBtn: "Analyze & Diagnose Disease",
+                diagResultTitle: "Medical Diagnosis Result",
+                diseaseDetected: "Detected Disease:",
+                symptomsObserved: "Observed Symptoms:",
+                curePlanTitle: "Treatment & Prevention Plan:",
+                saveMedicalRecord: "Save Report to Health Record",
+                postPlaceholder: "Share your gardening story or ask community...",
+                addImage: "Add Photo",
+                publishBtn: "Post",
+                likeBtn: "Like",
+                commentBtn: "Comment",
+                challenge30Title: "30-Day Growing Challenge",
+                challenge30Desc: "Track your plant's daily growth with photos and gain leaderboard points!",
+                joinChallengeBtn: "Join Challenge",
+                leaderboardTitle: "Leaderboard",
+                fullNameLbl: "Full Name",
+                emailLbl: "Email Address",
+                passLbl: "Password",
+                msgLbl: "Your Message or Query",
+                sendMsgBtn: "Send Message",
+                loginBtn: "Login",
+                noAccount: "Don't have an account?",
+                createAccount: "Create new account",
+                createAccountTitle: "Create New Account",
+                registerBtn: "Register",
+                hasAccount: "Already have an account?",
+                aiTitle: "Smart Agri Assistant (Ask AI)",
+                aiSubtitle: "Connected and ready to assist with crop & plant care",
+                aiGreeting: "Hello! I am your AI Agri Advisor. How can I help you with watering, fertilizing, or plant care today?",
+                pillMint: "Mint Care",
+                pillYellow: "Yellow Leaves",
+                pillAloe: "Aloe Watering",
+                aiPlaceholder: "Ask AI advisor anything...",
+                sendBtn: "Send",
+                emptyCart: "Your cart is currently empty",
+                totalLbl: "Total:",
+                currency: "EGP",
+                checkoutBtn: "Complete Purchase"
+            }
+        };
+
+        let currentLang = 'ar';
+        let cart = [];
+        let currentUser = null;
+        let isAudioMuted = true;
+        let selectedPlantImage = null;
+
+        // FETCH WATERING SCHEDULE FROM BACKEND
+        async function fetchSchedules() {
+            try {
+                const response = await fetch(`${API_BASE}/api/schedule`);
+                const plants = await response.json();
+                const container = document.getElementById('scheduleContainer');
+                
+                if (!plants || plants.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-muted-text text-center py-4">لا توجد نباتات مضافة في الجدول حالياً</p>`;
+                    return;
+                }
+
+                container.innerHTML = '';
+                plants.forEach(plant => {
+                    container.innerHTML += `
+                        <div class="animated-card bg-card-bg/80 p-5 rounded-3xl border border-card-border space-y-3 shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-2xl bg-accent-green/10 flex items-center justify-center text-accent-green">
+                                        <i class="fa-solid fa-leaf text-base"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-xs text-accent-green">${plant.name}</h3>
+                                        <span class="text-[10px] text-muted-text">دورية الري: كل ${plant.interval_days} أيام</span>
+                                    </div>
+                                </div>
+                                <button onclick="markPlantWatered(${plant.id})" class="bg-accent-green text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-hover-green transition active:scale-95">
+                                    تم الري اليوم
+                                </button>
+                            </div>
+                            <div class="w-full bg-sidebar-bg rounded-full h-2">
+                                <div class="bg-accent-green h-2 rounded-full" style="width: ${plant.moisture_level}%"></div>
+                            </div>
+                            <span class="text-[10px] text-muted-text block text-left">آخر ري: ${new Date(plant.last_watered).toLocaleDateString()}</span>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error fetching schedules:", error);
+            }
+        }
+
+        // ADD NEW PLANT TO BACKEND
+        async function addNewPlantSchedule() {
+            const name = document.getElementById('newPlantName').value.trim();
+            const interval_days = parseInt(document.getElementById('newPlantInterval').value);
+
+            if (!name) { 
+                alert(currentLang === 'ar' ? 'يرجى إدخال اسم النبتة أولاً' : 'Please enter plant name first'); 
+                return; 
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/schedule`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, interval_days })
+                });
+
+                if (response.ok) {
+                    alert(currentLang === 'ar' ? `تمت إضافة "${name}" لجدول المتابعة بنجاح.` : `"${name}" added to schedule.`);
+                    document.getElementById('newPlantName').value = '';
+                    fetchSchedules();
+                }
+            } catch (error) {
+                alert("خطأ في الاتصال بالخادم: " + error.message);
+            }
+        }
+
+        async function markPlantWatered(plantId) {
+            try {
+                const response = await fetch(`${API_BASE}/api/schedule/${plantId}/water`, {
+                    method: 'PUT'
+                });
+                if (response.ok) {
+                    fetchSchedules();
+                    alert(currentLang === 'ar' ? 'تم تسجيل الري بنجاح!' : 'Watering recorded successfully!');
+                }
+            } catch (error) {
+                alert("خطأ في الاتصال بالخادم");
+            }
+        }
+
+        // FETCH COMMUNITY POSTS FROM BACKEND
+        async function fetchCommunityPosts() {
+            try {
+                const response = await fetch(`${API_BASE}/api/community/posts`);
+                const posts = await response.json();
+                const feed = document.getElementById('feedContainer');
+                
+                if (!posts || posts.length === 0) {
+                    feed.innerHTML = `<p class="text-xs text-muted-text text-center py-4">لا توجد منشورات حتى الآن</p>`;
+                    return;
+                }
+
+                feed.innerHTML = '';
+                posts.forEach(post => {
+                    feed.innerHTML += `
+                        <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border space-y-2 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full bg-accent-green text-white flex items-center justify-center font-bold text-xs">
+                                    ${post.author_name.substring(0, 2)}
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-xs text-accent-green">${post.author_name}</h4>
+                                    <span class="text-[10px] text-muted-text">${new Date(post.created_at).toLocaleTimeString()}</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-hover-green leading-relaxed">${post.content}</p>
+                            <div class="flex gap-4 pt-2 border-t border-card-border text-xs text-muted-text">
+                                <button onclick="likePost(${post.id})" class="hover:text-accent-green transition flex items-center gap-1"><i class="fa-regular fa-heart"></i> <span>إعجاب (${post.likes})</span></button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error fetching posts:", error);
+            }
+        }
+
+        async function publishPost() {
+            const input = document.getElementById('postInput');
+            const content = input.value.trim();
+            if (!content) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/community/posts`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        content: content,
+                        author_name: currentUser || (currentLang === 'ar' ? 'عضو زراعي' : 'Agri Member')
+                    })
+                });
+
+                if (response.ok) {
+                    input.value = '';
+                    fetchCommunityPosts();
+                }
+            } catch (error) {
+                alert("فشل نشر المنشور: " + error.message);
+            }
+        }
+
+        async function likePost(postId) {
+            try {
+                await fetch(`${API_BASE}/api/community/posts/${postId}/like`, { method: 'POST' });
+                fetchCommunityPosts();
+            } catch (error) {
+                console.error("Error liking post:", error);
+            }
+        }
+
+        // PLANT DOCTOR AI REAL ANALYSIS VIA BACKEND
+        async function analyzePlantHealth() {
+            if (!selectedPlantImage) {
+                alert(currentLang === 'ar' ? 'يرجى اختيار صورة لورقة النبات أولاً.' : 'Please upload a plant leaf photo first.');
+                return;
+            }
+
+            const fileInput = document.getElementById('plantImageInput');
+            const formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            const laser = document.getElementById('scanLaser');
+            const btn = document.getElementById('analyzeBtn');
+
+            laser.classList.remove('hidden');
+            btn.innerText = currentLang === 'ar' ? 'جارٍ تحليل وفحص الأنسجة بالخادم...' : 'Analyzing plant tissue on server...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/doctor/analyze`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('فشل الاتصال بالخادم');
+
+                const data = await response.json();
+
+                document.getElementById('diseaseName').innerText = data.disease_name;
+                document.getElementById('diseaseSymptoms').innerText = data.symptoms;
+                
+                const treatmentList = document.getElementById('treatmentSteps');
+                treatmentList.innerHTML = '';
+                data.treatment.forEach(step => {
+                    treatmentList.innerHTML += `<li>${step}</li>`;
+                });
+
+                laser.classList.add('hidden');
+                btn.innerText = translations[currentLang].analyzeBtn;
+                btn.disabled = false;
+
+                const diagCard = document.getElementById('diagnosisCard');
+                diagCard.classList.remove('hidden');
+                diagCard.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (error) {
+                alert("حدث خطأ أثناء الاتصال بالخادم: " + error.message);
+                laser.classList.add('hidden');
+                btn.innerText = translations[currentLang].analyzeBtn;
+                btn.disabled = false;
+            }
+        }
+
+        // INITIAL LOAD DATA FROM BACKEND ON STARTUP
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchSchedules();
+            fetchCommunityPosts();
+        });
+
+        // FIXED RIPPLE CLICK SYSTEM - CLEANS UP PERFECTLY
+        window.addEventListener('click', (e) => {
+            const ripple = document.createElement('div');
+            ripple.className = 'click-ripple';
+            ripple.style.left = `${e.clientX}px`;
+            ripple.style.top = `${e.clientY}px`;
+            
+            document.body.appendChild(ripple);
+
+            setTimeout(() => {
+                if (ripple && ripple.parentNode) {
+                    ripple.parentNode.removeChild(ripple);
+                }
+            }, 450);
+        });
+
+        // SOIL CALCULATOR LOGIC
+        function calculateSoilRequirement() {
+            const l = parseFloat(document.getElementById('calcLength').value) || 0;
+            const w = parseFloat(document.getElementById('calcWidth').value) || 0;
+            const h = parseFloat(document.getElementById('calcHeight').value) || 0;
+
+            const volumeLiters = (l * w * h) / 1000;
+            const peat = volumeLiters * 0.65;
+            const perlite = volumeLiters * 0.35;
+            const fertGrams = volumeLiters * 10;
+
+            document.getElementById('resVolume').innerText = volumeLiters.toFixed(1) + (currentLang === 'ar' ? " لتر" : " L");
+            document.getElementById('resPeat').innerText = peat.toFixed(1) + (currentLang === 'ar' ? " لتر" : " L");
+            document.getElementById('resPerlite').innerText = perlite.toFixed(1) + (currentLang === 'ar' ? " لتر" : " L");
+            document.getElementById('resFert').innerText = fertGrams.toFixed(0) + (currentLang === 'ar' ? " جرام" : " g");
+
+            document.getElementById('calcResultBox').classList.remove('hidden');
+        }
+
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const root = document.getElementById('htmlRoot');
+            
+            if (lang === 'en') {
+                root.setAttribute('dir', 'ltr');
+                root.setAttribute('lang', 'en');
+            } else {
+                root.setAttribute('dir', 'rtl');
+                root.setAttribute('lang', 'ar');
+            }
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+
+            updateUserUI();
+            updateCartUI();
+        }
+
+        function togglePlantCursorSetting(enabled) {
+            const cursor = document.getElementById('plant-cursor');
+            if (enabled) {
+                document.body.classList.add('plant-cursor-active');
+                cursor.style.display = 'block';
+            } else {
+                document.body.classList.remove('plant-cursor-active');
+                cursor.style.display = 'none';
+            }
+        }
+
+        const plantCursor = document.getElementById('plant-cursor');
+
+        window.addEventListener('mousemove', (e) => {
+            const x = e.clientX;
+            const y = e.clientY;
+            if (plantCursor) {
+                plantCursor.style.transform = `translate(${x}px, ${y}px) translate(-20%, -20%)`;
+            }
+        });
+
+        function previewPlantImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedPlantImage = e.target.result;
+                document.getElementById('uploadPrompt').classList.add('hidden');
+                document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                document.getElementById('plantImagePreview').src = selectedPlantImage;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function toggleAuthMode() {
+            document.getElementById('loginFormContainer').classList.toggle('hidden');
+            document.getElementById('registerFormContainer').classList.toggle('hidden');
+        }
+
+        function handleRegister() {
+            const name = document.getElementById('regName').value.trim();
+            if (!name) { alert(currentLang === 'ar' ? 'يرجى ادخال الاسم الكامل' : 'Please enter full name'); return; }
+            currentUser = name;
+            updateUserUI();
+            closeModal('authModal');
+            alert(currentLang === 'ar' ? `مرحباً بك يا ${name}! تم إنشاء حسابك بنجاح.` : `Welcome ${name}! Account created.`);
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value.trim();
+            if (!email) { alert(currentLang === 'ar' ? 'يرجى ادخال البريد الإلكتروني' : 'Please enter email'); return; }
+            currentUser = email.split('@')[0];
+            updateUserUI();
+            closeModal('authModal');
+            alert(currentLang === 'ar' ? `أهلاً بعودتك، ${currentUser}!` : `Welcome back, ${currentUser}!`);
+        }
+
+        function updateUserUI() {
+            const btnText = document.getElementById('authBtnText');
+            if (currentUser) btnText.innerText = currentUser;
+            else btnText.innerText = translations[currentLang].myAccount;
+        }
+
         function toggleAccordion(id, chevronId) {
             const content = document.getElementById(id);
             const chevron = document.getElementById(chevronId);
@@ -714,26 +1777,21 @@
             chevron.classList.toggle('rotate-chevron');
         }
 
-        // Tab Navigation with Active Sidebar Highlight
         function switchTab(tabId) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
 
-            // Show selected tab
             const targetTab = document.getElementById(`tab-${tabId}`);
             if (targetTab) {
                 targetTab.classList.add('active');
             }
 
-            // Remove active highlights from single buttons
-            ['btn-tab-community', 'btn-tab-challenges', 'btn-tab-contact'].forEach(btnId => {
+            ['btn-tab-doctor', 'btn-tab-community', 'btn-tab-challenges', 'btn-tab-settings', 'btn-tab-contact', 'btn-tab-schedule', 'btn-tab-calculator'].forEach(btnId => {
                 const btn = document.getElementById(btnId);
                 if (btn) btn.classList.remove('sidebar-item-active');
             });
 
-            // Highlight active single button if clicked
             const activeBtn = document.getElementById(`btn-tab-${tabId}`);
             if (activeBtn) {
                 activeBtn.classList.add('sidebar-item-active');
@@ -742,21 +1800,19 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Mute Audio Toggle
         function toggleAudioMute() {
             isAudioMuted = !isAudioMuted;
             const icon = document.getElementById('audioIcon');
             const text = document.getElementById('audioText');
             if (isAudioMuted) {
                 icon.className = "fa-solid fa-volume-xmark text-accent-green";
-                text.innerText = "بدون موسيقى";
+                text.innerText = translations[currentLang].noAudio;
             } else {
                 icon.className = "fa-solid fa-volume-high text-accent-green";
-                text.innerText = "تشغيل الصوت";
+                text.innerText = "Audio On";
             }
         }
 
-        // Modal Helpers
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
@@ -766,11 +1822,10 @@
             openModal('videoModal');
         }
 
-        // Cart Actions
         function addToCart(title, price) {
             cart.push({ title, price });
             updateCartUI();
-            alert(`تمت إضافة "${title}" إلى سلتك.`);
+            alert(currentLang === 'ar' ? `تمت إضافة "${title}" إلى سلتك.` : `"${title}" added to cart.`);
         }
 
         function updateCartUI() {
@@ -779,7 +1834,7 @@
             const totalSpan = document.getElementById('cartTotal');
 
             if (cart.length === 0) {
-                list.innerHTML = `<p class="text-muted-text text-center py-4">السلة فارغة حالياً</p>`;
+                list.innerHTML = `<p class="text-muted-text text-center py-4">${translations[currentLang].emptyCart}</p>`;
                 totalSpan.innerText = "0";
                 return;
             }
@@ -789,9 +1844,9 @@
             cart.forEach((item) => {
                 total += item.price;
                 html += `
-                    <div class="flex justify-between items-center bg-sidebar-bg p-2.5 rounded-xl border border-border-color">
+                    <div class="flex justify-between items-center bg-sidebar-bg p-2.5 rounded-xl border border-border-color shadow-sm">
                         <span>${item.title}</span>
-                        <span class="font-bold text-accent-green">${item.price} ج.م</span>
+                        <span class="font-bold text-accent-green">${item.price} ${translations[currentLang].currency}</span>
                     </div>
                 `;
             });
@@ -799,7 +1854,11 @@
             totalSpan.innerText = total;
         }
 
-        // AI Chat Assistant Logic
+        function sendQuickAiQuery(queryText) {
+            document.getElementById('aiInput').value = queryText;
+            sendAiMessage();
+        }
+
         function sendAiMessage() {
             const input = document.getElementById('aiInput');
             const text = input.value.trim();
@@ -812,58 +1871,75 @@
                 </div>
             `;
             input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const typingId = "typing-" + Date.now();
+            chatBox.innerHTML += `
+                <div id="${typingId}" class="bg-sidebar-bg p-3 rounded-2xl max-w-[85%] text-muted-text italic border border-border-color/50 shadow-sm flex items-center gap-2">
+                    <i class="fa-solid fa-circle-notch animate-spin text-accent-green"></i>
+                    <span>${currentLang === 'ar' ? 'جارٍ تحليل استفسارك...' : 'Analyzing query...'}</span>
+                </div>
+            `;
+            chatBox.scrollTop = chatBox.scrollHeight;
 
             setTimeout(() => {
-                let reply = "بناءً على سؤالك، يُنصح بالري المنتظم عندما تجف التربة بعمق 2 سم وتوفير إضاءة ممتازة.";
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.remove();
+
+                let reply = currentLang === 'ar' ? "إليك أفضل النصائح الزراعية لهذا الاستفسار:" : "Here are the best agricultural recommendations for your query:";
+                const lowerText = text.toLowerCase();
+
+                if (lowerText.includes("نعناع") || lowerText.includes("mint")) {
+                    reply = currentLang === 'ar' ? "العناية بنبات النعناع: يحتاج النعناع لشمس مباشرة أو غير مباشرة لمدة 4-6 ساعات يومياً، مع ري منتظم بمجرد جفاف سطح التربة." : "Spearmint Care: Needs 4-6 hours of indirect sunlight daily and regular watering as soon as topsoil dries.";
+                } else if (lowerText.includes("أصفرار") || lowerText.includes("صفراء") || lowerText.includes("yellow")) {
+                    reply = currentLang === 'ar' ? "سبب أصفرار الأوراق: ينجم عادةً إما عن زيادة الري وتجمع المياه القاعية، أو نقص عنصر النيتروجين." : "Yellow Leaves: Usually caused by overwatering & waterlogged soil or nitrogen deficiency.";
+                } else {
+                    reply = currentLang === 'ar' ? "بناءً على استفسارك، نوصي دائماً بالتأكد من جودة تصريف التربة وتوفير الضوء المناسب مع فحص رطوبة التربة قبل إضافة الماء." : "We recommend ensuring proper soil drainage, sufficient ambient light, and checking soil moisture before watering.";
+                }
+
                 chatBox.innerHTML += `
-                    <div class="bg-sidebar-bg p-3 rounded-2xl max-w-[85%] text-hover-green leading-relaxed border border-border-color/50">
+                    <div class="bg-sidebar-bg p-3 rounded-2xl max-w-[85%] text-hover-green leading-relaxed border border-border-color/50 shadow-sm">
                         ${reply}
                     </div>
                 `;
                 chatBox.scrollTop = chatBox.scrollHeight;
-            }, 500);
+            }, 700);
         }
 
-        // Feed Publishing
-        function publishPost() {
-            const input = document.getElementById('postInput');
-            const val = input.value.trim();
-            if (!val) return;
-
-            const feed = document.getElementById('feedContainer');
-            feed.innerHTML = `
-                <div class="bg-card-bg p-4 rounded-2xl border border-card-border space-y-2 shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-accent-green text-white flex items-center justify-center font-bold text-xs">
-                            أنت
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-xs text-accent-green">عضو جديد</h4>
-                            <span class="text-[10px] text-muted-text">الآن</span>
-                        </div>
-                    </div>
-                    <p class="text-xs text-hover-green leading-relaxed">${val}</p>
-                    <div class="flex gap-4 pt-2 border-t border-card-border text-xs text-muted-text">
-                        <button class="hover:text-accent-green"><i class="fa-regular fa-heart ml-1"></i> إعجاب</button>
-                        <button class="hover:text-accent-green"><i class="fa-regular fa-comment ml-1"></i> تعليق</button>
-                    </div>
-                </div>
-            ` + feed.innerHTML;
-
-            input.value = '';
-        }
-
-        // Global Search Router
         function handleGlobalSearch() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             if (!query) return;
 
-            if (query.includes("بذور")) switchTab('store-seeds');
-            else if (query.includes("أدوات")) switchTab('store-tools');
-            else if (query.includes("سهلة")) switchTab('suggestions-easy');
-            else if (query.includes("ظل")) switchTab('suggestions-shade');
-            else if (query.includes("معطرة")) switchTab('suggestions-aromatic');
-            else if (query.includes("قاموس") || query.includes("صبار")) switchTab('dictionary');
+            if (query.includes("بذور") || query.includes("seed")) switchTab('store-seeds');
+            else if (query.includes("أدوات") || query.includes("tool")) switchTab('store-tools');
+            else if (query.includes("طبيب") || query.includes("مرض") || query.includes("doctor")) switchTab('doctor');
+            else if (query.includes("حاسبة") || query.includes("تربة") || query.includes("calc")) switchTab('calculator');
+            else if (query.includes("جدول") || query.includes("ري") || query.includes("water")) switchTab('schedule');
+            else if (query.includes("سهلة") || query.includes("easy")) switchTab('suggestions-easy');
+            else if (query.includes("إعدادات") || query.includes("settings")) switchTab('settings');
+        }
+
+        function handleApplyOpp() {
+            alert(currentLang === 'ar' ? 'تم تقديم طلبك بنجاح!' : 'Application submitted successfully!');
+        }
+
+        function handleSaveReport() {
+            alert(currentLang === 'ar' ? 'تم حفظ تقرير النبتة في سجلي الطبي بنجاح!' : 'Medical report saved successfully!');
+        }
+
+        function handleJoinChallenge() {
+            alert(currentLang === 'ar' ? 'تم انضمامك للتحدي بنجاح!' : 'Successfully joined the challenge!');
+        }
+
+        function handleSendMsg() {
+            alert(currentLang === 'ar' ? 'تم إرسال رسالتك بنجاح!' : 'Message sent successfully!');
+        }
+
+        function handleCheckout() {
+            alert(currentLang === 'ar' ? 'تم إتمام الطلب بنجاح!' : 'Order completed successfully!');
+            cart = [];
+            updateCartUI();
+            closeModal('cartModal');
         }
     </script>
 </body>
