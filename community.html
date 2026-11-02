@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ملتقى محبي الزراعة | منصة الزراعة الذكية الرقمية</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts: Cairo & Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@1,600;1,700;1,800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'main-bg': '#F5F2EA',
+                        'sidebar-bg': '#ECE8DC',
+                        'card-bg': '#F1ECE1',
+                        'accent-green': '#314731',
+                        'hover-green': '#233423',
+                        'muted-text': '#5A695A',
+                        'border-color': '#DFD9C9',
+                        'card-border': '#E5E0D2',
+                        'active-bg': '#DFDACB',
+                    },
+                    fontFamily: {
+                        'cairo': ['Cairo', 'sans-serif'],
+                        'serif-brand': ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * {
+            font-family: 'Cairo', sans-serif;
+        }
+
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.45;
+        }
+
+        /* إخفاء الماوس الافتراضي من جميع العناصر بلا استثناء */
+body.plant-cursor-active, 
+body.plant-cursor-active button, 
+body.plant-cursor-active input, 
+body.plant-cursor-active textarea, 
+body.plant-cursor-active a,
+body.plant-cursor-active img,
+body.plant-cursor-active video,
+body.plant-cursor-active div {
+    cursor: none !important;
+}
+
+/* ضبط الماوس المخصص ليتجاهل كل الضغطات ويكون في أعلى طبقة دائماً */
+#plant-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none !important;
+    z-index: 999999 !important;
+    transform: translate(-20%, -20%);
+    font-size: 20px;
+    color: #314731;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    transition: transform 0.04s ease-out;
+}
+
+/* تأثير موجة النقر */
+.click-ripple {
+    position: fixed;
+    pointer-events: none !important;
+    border-radius: 50%;
+    background: rgba(49, 71, 49, 0.35);
+    transform: translate(-50%, -50%) scale(0);
+    animation: rippleAnim 0.45s cubic-bezier(0, 0.2, 0.8, 1) forwards;
+    z-index: 999998 !important;
+}
+
+@keyframes rippleAnim {
+    to {
+        transform: translate(-50%, -50%) scale(2.8);
+        opacity: 0;
+    }
+}
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #ECE8DC;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #B8B09D;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #314731;
+        }
+
+        .animated-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(4px);
+        }
+        .animated-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(49, 71, 49, 0.08);
+        }
+
+        .filter-btn-active {
+            background-color: #314731 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(49, 71, 49, 0.2);
+        }
+
+        .nav-item-active {
+            color: #314731 !important;
+            font-weight: 800 !important;
+            border-top: 3px solid #314731;
+        }
+
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .story-ring {
+            background: linear-gradient(45deg, #314731, #85a985);
+            padding: 2.5px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-main-bg antialiased select-none relative plant-cursor-active overflow-x-hidden pb-20">
+
+    <!-- خلفية الجزيئات المتحركة التفاعلية -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- مؤشر الماوس المخصص -->
+    <div id="plant-cursor">
+        <i class="fa-solid fa-seedling"></i>
+    </div>
+
+    <!-- Top Header Bar -->
+    <header class="sticky top-0 z-30 bg-sidebar-bg/95 backdrop-blur-md border-b border-border-color shadow-sm px-4 md:px-8 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a href="index.html" class="flex items-center gap-2 bg-main-bg hover:bg-white border border-border-color px-4 py-2 rounded-full text-xs font-bold text-hover-green shadow-sm transition-all duration-300 hover:scale-105 active:scale-95">
+                <i class="fa-solid fa-arrow-right text-accent-green"></i>
+                <span>المنصة الرئيسية</span>
+            </a>
+
+            <div class="hidden sm:flex items-center gap-2 text-accent-green font-bold text-base border-r border-border-color pr-4">
+                <div class="w-8 h-8 rounded-full bg-accent-green/10 flex items-center justify-center">
+                    <i class="fa-solid fa-users text-accent-green"></i>
+                </div>
+                <span>ملتقى محبي الزراعة</span>
+            </div>
+        </div>
+
+        <div class="w-full max-w-xs md:max-w-md relative mx-2">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-muted-text text-xs"></i>
+            <input 
+                type="text" 
+                id="communitySearch"
+                onkeyup="filterFeedBySearch()"
+                placeholder="ابحث في المنشورات، البذور، أو الأعضاء..." 
+                class="w-full bg-main-bg/95 border border-border-color rounded-full py-2 px-9 text-xs focus:outline-none focus:ring-2 focus:ring-accent-green/40 placeholder-muted-text shadow-inner transition-all text-hover-green font-medium"
+            >
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button onclick="switchView('feed'); scrollToCreatePost();" class="bg-accent-green text-white text-xs font-bold px-4 py-2 rounded-full hover:bg-hover-green transition-all shadow-sm flex items-center gap-2 active:scale-95">
+                <i class="fa-solid fa-plus text-xs"></i>
+                <span class="hidden sm:inline">منشور جديد</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
+
+        <!-- Main Left Section (8 Cols) -->
+        <section class="lg:col-span-8 space-y-6">
+
+            <!-- ==================== SECTION 1: FEED ==================== -->
+            <div id="view-feed" class="view-section active space-y-6">
+                
+                <!-- Stories Carousel -->
+                <div class="animated-card bg-card-bg/80 p-4 rounded-3xl border border-card-border shadow-sm">
+                    <div class="flex items-center justify-between mb-3 px-1">
+                        <span class="font-bold text-xs text-accent-green flex items-center gap-2">
+                            <i class="fa-solid fa-circle-play text-accent-green"></i> يوميات المزارعين (Agri Stories)
+                        </span>
+                        <span class="text-[10px] text-muted-text">تختفي بعد 24 ساعة</span>
+                    </div>
+
+                    <div class="flex items-center gap-4 overflow-x-auto pb-1 scrollbar-none">
+                        <!-- Add Story -->
+                        <div onclick="alert('جارٍ فتح كاميرا القصص...')" class="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group">
+                            <div class="w-14 h-14 rounded-full bg-sidebar-bg border-2 border-dashed border-accent-green flex items-center justify-center text-accent-green group-hover:scale-105 transition">
+                                <i class="fa-solid fa-plus text-base"></i>
+                            </div>
+                            <span class="text-[10px] font-bold text-accent-green">قصتك</span>
+                        </div>
+
+                        <!-- User Stories -->
+                        <div onclick="viewStory('م. كريم', 'https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=600&q=80')" class="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group">
+                            <div class="story-ring rounded-full group-hover:scale-105 transition">
+                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80" class="w-13 h-13 rounded-full object-cover border-2 border-white">
+                            </div>
+                            <span class="text-[10px] font-medium text-hover-green">م. كريم</span>
+                        </div>
+
+                        <div onclick="viewStory('سارة محمود', 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=600&q=80')" class="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group">
+                            <div class="story-ring rounded-full group-hover:scale-105 transition">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-13 h-13 rounded-full object-cover border-2 border-white">
+                            </div>
+                            <span class="text-[10px] font-medium text-hover-green">سارة م.</span>
+                        </div>
+
+                        <div onclick="viewStory('عمر المهندس', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80')" class="flex flex-col items-center gap-1.5 shrink-0 cursor-pointer group">
+                            <div class="story-ring rounded-full group-hover:scale-105 transition">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" class="w-13 h-13 rounded-full object-cover border-2 border-white">
+                            </div>
+                            <span class="text-[10px] font-medium text-hover-green">عمر م.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Filter Tabs -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+                    <button onclick="filterCategory('ALL', this)" class="filter-btn filter-btn-active bg-card-bg text-accent-green border border-card-border px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-200">
+                        <i class="fa-solid fa-border-all ml-1"></i> جميع المنشورات
+                    </button>
+                    <button onclick="filterCategory('تجارب زراعية', this)" class="filter-btn bg-card-bg text-accent-green border border-card-border px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-200">
+                        🌱 تجارب زراعية
+                    </button>
+                    <button onclick="filterCategory('استفسارات واحتياجات', this)" class="filter-btn bg-card-bg text-accent-green border border-card-border px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-200">
+                        ❓ استفسارات وأسئلة
+                    </button>
+                    <button onclick="filterCategory('عرض حصاد', this)" class="filter-btn bg-card-bg text-accent-green border border-card-border px-4 py-2 rounded-2xl text-xs font-bold whitespace-nowrap transition-all duration-200">
+                        🍅 حصاد البلكونة
+                    </button>
+                </div>
+
+                <!-- Create Post Box -->
+                <div id="createPostBox" class="animated-card bg-card-bg/90 p-5 rounded-3xl border border-card-border space-y-3 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-accent-green text-white flex items-center justify-center font-bold text-sm shadow-inner">
+                            <i class="fa-solid fa-user-pen"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-accent-green">شارك تجاربك مع مجتمع المزارعين</h4>
+                            <span class="text-[10px] text-muted-text">انشر صور المحصول، اسأل عن الآفات، أو شارك نصائحك الزراعية</span>
+                        </div>
+                    </div>
+
+                    <textarea id="postInput" placeholder="ما الذي ينمو في حديقتك أو بلكونتك اليوم؟ شاركنا التفاصيل..." class="w-full bg-sidebar-bg/80 p-3.5 rounded-2xl text-xs text-hover-green focus:outline-none border border-border-color resize-none h-24 transition shadow-inner font-medium"></textarea>
+
+                    <div id="postImagePreviewContainer" class="hidden relative w-fit">
+                        <img id="postImagePreview" src="" class="h-32 rounded-xl border border-border-color object-cover">
+                        <button onclick="removePostImage()" class="absolute -top-2 -right-2 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <div class="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-card-border">
+                        <div class="flex items-center gap-2">
+                            <label class="cursor-pointer text-xs text-muted-text hover:text-accent-green transition flex items-center gap-1.5 bg-sidebar-bg px-3 py-1.5 rounded-xl border border-border-color">
+                                <i class="fa-solid fa-image text-accent-green"></i> <span>إضافة صورة</span>
+                                <input type="file" id="postImageInput" accept="image/*" onchange="previewPostImage(event)" class="hidden">
+                            </label>
+                            <select id="postCategory" class="bg-sidebar-bg text-hover-green text-[11px] font-bold px-3 py-1.5 rounded-xl border border-border-color focus:outline-none">
+                                <option value="تجارب زراعية">🌱 تجارب زراعية</option>
+                                <option value="استفسارات واحتياجات">❓ استفسارات</option>
+                                <option value="عرض حصاد">🍅 عرض حصاد</option>
+                            </select>
+                        </div>
+
+                        <button onclick="publishPost()" class="bg-accent-green text-white text-xs font-bold px-6 py-2.5 rounded-xl hover:bg-hover-green transition-all active:scale-95 shadow-sm flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> <span>نشر المنشور</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Feed Posts Container -->
+                <div id="feedContainer" class="space-y-5">
+                    <!-- Posts inserted dynamically -->
+                </div>
+            </div>
+
+            <!-- ==================== SECTION 2: SEED SWAP MARKET ==================== -->
+            <div id="view-swap" class="view-section space-y-6">
+                <div class="animated-card bg-card-bg/90 p-6 rounded-3xl border border-card-border space-y-4 shadow-sm">
+                    <div class="flex justify-between items-center border-b border-card-border pb-3">
+                        <div>
+                            <h3 class="font-bold text-sm text-accent-green flex items-center gap-2">
+                                <i class="fa-solid fa-arrows-rotate text-accent-green"></i> سوق التبادل المجاني (Seed & Plant Swap)
+                            </h3>
+                            <p class="text-xs text-muted-text mt-0.5">تبادل البذور والشتلات الفائضة لديك مع المزارعين القريبين منك مجاناً!</p>
+                        </div>
+                        <button onclick="alert('قم بإرفاق تفاصيل البذور التي تريد عرضها للتبادل')" class="bg-accent-green text-white text-xs font-bold px-4 py-2 rounded-xl hover:bg-hover-green transition">
+                            عرض عينة للتبادل
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-sidebar-bg p-4 rounded-2xl border border-border-color flex gap-3 items-center">
+                            <img src="https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=200&q=80" class="w-16 h-16 rounded-xl object-cover shrink-0">
+                            <div class="space-y-1 flex-1">
+                                <h4 class="font-bold text-xs text-accent-green">بذور طماطم شيري فائضة (15 بذرة)</h4>
+                                <span class="text-[10px] text-muted-text block">المطلوب للتبادل: بذور نعناع أو ريحان</span>
+                                <span class="text-[10px] font-bold text-accent-green block">المكان: المعادي، القاهرة</span>
+                                <button onclick="alert('تم إرسال طلب التبادل للعضو!')" class="mt-1 bg-accent-green text-white px-3 py-1 rounded-lg text-[10px] font-bold">طلب التبادل</button>
+                            </div>
+                        </div>
+
+                        <div class="bg-sidebar-bg p-4 rounded-2xl border border-border-color flex gap-3 items-center">
+                            <img src="https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=200&q=80" class="w-16 h-16 rounded-xl object-cover shrink-0">
+                            <div class="space-y-1 flex-1">
+                                <h4 class="font-bold text-xs text-accent-green">خلفة صبار ألوفيرا صغيرة</h4>
+                                <span class="text-[10px] text-muted-text block">المطلوب للتبادل: عقلة بوتس أو لافندر</span>
+                                <span class="text-[10px] font-bold text-accent-green block">المكان: الدقي، الجيزة</span>
+                                <button onclick="alert('تم إرسال طلب التبادل للعضو!')" class="mt-1 bg-accent-green text-white px-3 py-1 rounded-lg text-[10px] font-bold">طلب التبادل</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== SECTION 3: NOTIFICATIONS ==================== -->
+            <div id="view-notifications" class="view-section space-y-4">
+                <div class="animated-card bg-card-bg/90 p-6 rounded-3xl border border-card-border space-y-4 shadow-sm">
+                    <h3 class="font-bold text-sm text-accent-green border-b border-card-border pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-bell text-accent-green"></i> التنبيهات والإشعارات
+                    </h3>
+
+                    <div class="space-y-2.5">
+                        <div class="bg-sidebar-bg p-3.5 rounded-2xl border border-border-color flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-accent-green/10 text-accent-green flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-heart text-red-500"></i>
+                            </div>
+                            <div class="text-xs">
+                                <p class="text-hover-green font-medium">أعجب <strong>م. سارة محمود</strong> بمنشورك حول حصاد الطماطم.</p>
+                                <span class="text-[10px] text-muted-text">منذ 15 دقيقة</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-sidebar-bg p-3.5 rounded-2xl border border-border-color flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-accent-green/10 text-accent-green flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-comment text-accent-green"></i>
+                            </div>
+                            <div class="text-xs">
+                                <p class="text-hover-green font-medium">أضاف <strong>أحمد العوضي</strong> تعليقاً على استفسارك عن تسميد النعناع.</p>
+                                <span class="text-[10px] text-muted-text">منذ ساعة واحدة</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== SECTION 4: EDIT PROFILE ==================== -->
+            <div id="view-profile" class="view-section space-y-6">
+                <div class="animated-card bg-card-bg/90 p-6 rounded-3xl border border-card-border space-y-5 shadow-sm max-w-xl mx-auto">
+                    <h3 class="font-bold text-sm text-accent-green border-b border-card-border pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-user-gear text-accent-green"></i> إعدادات وتعديل الملف الشخصي
+                    </h3>
+
+                    <div class="flex items-center gap-4">
+                        <img id="profileAvatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" class="w-16 h-16 rounded-full object-cover border-2 border-accent-green">
+                        <div>
+                            <button onclick="alert('قم برفع صورتك الشخصية الجديدة')" class="bg-sidebar-bg border border-border-color px-3 py-1.5 rounded-xl text-xs font-bold text-accent-green hover:bg-active-bg transition">تغيير الصورة</button>
+                            <span class="text-[10px] text-muted-text block mt-1">يدعم JPG, PNG</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-accent-green mb-1">الاسم في المجتمع</label>
+                            <input type="text" value="أحمد محمد (مزارع مبتدئ)" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-accent-green mb-1">النبذة الشخصية (Bio)</label>
+                            <textarea class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none h-20 resize-none font-medium">مهتم بشغف بزراعة الأسطح والبلكونات واستخدام الأسمدة العضوية المنزلية 🌿</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-accent-green mb-1">المنطقة / المدينة</label>
+                            <input type="text" value="القاهرة، مصر" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs border border-border-color focus:outline-none font-medium">
+                        </div>
+                    </div>
+
+                    <button onclick="alert('تم حفظ بيانات الملف الشخصي بنجاح!')" class="w-full bg-accent-green text-white font-bold text-xs py-3 rounded-xl hover:bg-hover-green transition shadow-sm">
+                        حفظ التعديلات
+                    </button>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Right Sidebar (4 Cols) -->
+        <aside class="lg:col-span-4 space-y-6">
+
+            <!-- Stats -->
+            <div class="animated-card bg-card-bg/80 p-5 rounded-3xl border border-card-border space-y-4 shadow-sm">
+                <div class="flex items-center gap-3 border-b border-card-border pb-3">
+                    <div class="w-9 h-9 rounded-2xl bg-accent-green/10 flex items-center justify-center text-accent-green">
+                        <i class="fa-solid fa-chart-line text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xs text-accent-green">إحصائيات المجتمع</h3>
+                        <span class="text-[10px] text-muted-text">نشاط الأعضاء والتفاعلات</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-sidebar-bg p-3 rounded-2xl border border-border-color">
+                        <span class="block text-lg font-bold text-accent-green font-mono">1,480+</span>
+                        <span class="text-[10px] text-muted-text font-bold">عضو نشط</span>
+                    </div>
+                    <div class="bg-sidebar-bg p-3 rounded-2xl border border-border-color">
+                        <span class="block text-lg font-bold text-accent-green font-mono">3,250+</span>
+                        <span class="text-[10px] text-muted-text font-bold">استفسار مُجاب</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Contributors -->
+            <div class="animated-card bg-card-bg/80 p-5 rounded-3xl border border-card-border space-y-4 shadow-sm">
+                <div class="flex items-center gap-3 border-b border-card-border pb-3">
+                    <div class="w-9 h-9 rounded-2xl bg-accent-green/10 flex items-center justify-center text-accent-green">
+                        <i class="fa-solid fa-award text-sm"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xs text-accent-green">أبرز خبراء ومزارعي المجتمع</h3>
+                        <span class="text-[10px] text-muted-text">الأعلى تفاعلاً وإجابة عن الأسئلة</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between bg-sidebar-bg p-2.5 rounded-2xl border border-border-color">
+                        <div class="flex items-center gap-2.5">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" class="w-9 h-9 rounded-full object-cover border border-accent-green">
+                            <div>
+                                <h4 class="font-bold text-xs text-accent-green">م. سارة محمود</h4>
+                                <span class="text-[10px] text-muted-text">خبير نباتات ظل</span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold bg-accent-green/10 text-accent-green px-2 py-0.5 rounded-full font-mono">1,850 pt</span>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-sidebar-bg p-2.5 rounded-2xl border border-border-color">
+                        <div class="flex items-center gap-2.5">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80" class="w-9 h-9 rounded-full object-cover border border-accent-green">
+                            <div>
+                                <h4 class="font-bold text-xs text-accent-green">أحمد العوضي</h4>
+                                <span class="text-[10px] text-muted-text">مزارع أسطح وشرفات</span>
+                            </div>
+                        </div>
+                        <span class="text-[10px] font-bold bg-accent-green/10 text-accent-green px-2 py-0.5 rounded-full font-mono">1,420 pt</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Tip Card -->
+            <div class="animated-card bg-card-bg/80 p-5 rounded-3xl border border-card-border space-y-3 shadow-sm">
+                <div class="flex items-center gap-2 text-accent-green font-bold text-xs">
+                    <i class="fa-solid fa-lightbulb text-amber-600"></i>
+                    <span>نصيحة اليوم من المجتمع</span>
+                </div>
+                <p class="text-xs text-muted-text leading-relaxed bg-sidebar-bg p-3 rounded-2xl border border-border-color">
+                    "عند إضافة تفالة القهوة المستعملة لتربة النعناع والريحان، احرص على تجفيفها أولاً لتجنب تكون الفطريات وزيادة حموضة التربة بشكل لطيف."
+                </p>
+            </div>
+
+            <!-- Trending Tags -->
+            <div class="animated-card bg-card-bg/80 p-5 rounded-3xl border border-card-border space-y-3 shadow-sm">
+                <h3 class="font-bold text-xs text-accent-green">الوسوم الزراعية الأكثر تداولاً</h3>
+                <div class="flex flex-wrap gap-2 text-[11px]">
+                    <span onclick="searchTag('#حصاد_البلكونة')" class="bg-sidebar-bg hover:bg-active-bg text-accent-green px-3 py-1 rounded-full border border-border-color cursor-pointer font-bold">#حصاد_البلكونة</span>
+                    <span onclick="searchTag('#نباتات_ظل')" class="bg-sidebar-bg hover:bg-active-bg text-accent-green px-3 py-1 rounded-full border border-border-color cursor-pointer font-bold">#نباتات_ظل</span>
+                    <span onclick="searchTag('#استفسار_سماد')" class="bg-sidebar-bg hover:bg-active-bg text-accent-green px-3 py-1 rounded-full border border-border-color cursor-pointer font-bold">#استفسار_سماد</span>
+                    <span onclick="searchTag('#زراعة_النعناع')" class="bg-sidebar-bg hover:bg-active-bg text-accent-green px-3 py-1 rounded-full border border-border-color cursor-pointer font-bold">#زراعة_النعناع</span>
+                </div>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-sidebar-bg/95 backdrop-blur-md border-t border-border-color py-2 px-6 flex justify-around items-center shadow-lg">
+        <button onclick="switchView('feed')" id="nav-btn-feed" class="nav-btn nav-item-active flex flex-col items-center gap-1 text-xs text-muted-text transition py-1">
+            <i class="fa-solid fa-house text-base"></i>
+            <span class="text-[10px]">الرئيسية</span>
+        </button>
+        <button onclick="switchView('swap')" id="nav-btn-swap" class="nav-btn flex flex-col items-center gap-1 text-xs text-muted-text transition py-1">
+            <i class="fa-solid fa-arrows-rotate text-base"></i>
+            <span class="text-[10px]">التبادل</span>
+        </button>
+        <button onclick="switchView('notifications')" id="nav-btn-notifications" class="nav-btn flex flex-col items-center gap-1 text-xs text-muted-text transition py-1 relative">
+            <i class="fa-solid fa-bell text-base"></i>
+            <span class="text-[10px]">الإشعارات</span>
+            <span class="absolute top-0 right-3 bg-red-500 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">2</span>
+        </button>
+        <button onclick="switchView('profile')" id="nav-btn-profile" class="nav-btn flex flex-col items-center gap-1 text-xs text-muted-text transition py-1">
+            <i class="fa-solid fa-user text-base"></i>
+            <span class="text-[10px]">البروفايل</span>
+        </button>
+    </nav>
+
+    <!-- JavaScript Script Code -->
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+        let selectedPostImage = null;
+        let activeFilter = 'ALL';
+
+        const initialPosts = [
+            {
+                id: 101,
+                author_name: "م. كريم عبدالفتاح",
+                author_avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&q=80",
+                created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+                category: "عرض حصاد",
+                content: "أول حصاد لي من الطماطم الكرزية (Cherry Tomatoes) من بلكونة الشقة! 🍅😍 \nتمت الزراعة باستخدام خلطة بيتموس وبيرلايت والتسميد بالـ NPK المتعادل أسبوعياً. #حصاد_البلكونة",
+                image_url: "https://images.unsplash.com/photo-1592841200221-a6898f307baa?auto=format&fit=crop&w=800&q=80",
+                likes: 24,
+                comments: [
+                    { author: "أحمد علي", text: "ماشاء الله حصاد ممتاز جداً! كم استغرقت من الشتلة للحصاد؟" },
+                    { author: "م. كريم عبدالفتاح", text: "حوالي 65 يوماً تقريباً يا أستاذ أحمد." }
+                ]
+            },
+            {
+                id: 102,
+                author_name: "منى السيد",
+                author_avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&q=80",
+                created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
+                category: "استفسارات واحتياجات",
+                content: "يا جماعة أوراق نبات الريحان بدأت تظهَر عليها أصفرار من الأسفل وتساقط خفيف. هل هذا نقص إضاءة ولا زيادة ري؟ #استفسار_سماد",
+                image_url: "https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?auto=format&fit=crop&w=800&q=80",
+                likes: 9,
+                comments: [
+                    { author: "سارة محمود", text: "افحصي رطوبة التربة أولاً، غالباً زيادة في كمية الري مع قلة فتحات تصريف الأصيص." }
+                ]
+            },
+            {
+                id: 103,
+                author_name: "عمر المهندس",
+                author_avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&q=80",
+                created_at: new Date(Date.now() - 3600000 * 10).toISOString(),
+                category: "تجارب زراعية",
+                content: "تجربتي في زراعة النعناع البلدي داخل أصيص معلق في البلكونة 🌿. السر في نجاحه هو القص المستمر للأطراف عشان يتفرع وكثافته تزيد. #زراعة_النعناع",
+                image_url: "https://images.unsplash.com/photo-1628556270448-4d4e4148e1b1?auto=format&fit=crop&w=800&q=80",
+                likes: 42,
+                comments: [
+                    { author: "منى السيد", text: "فكرة ممتازة جداً، هل بيحتاج شمس مباشرة كاملة؟" },
+                    { author: "عمر المهندس", text: "شمس جزئية لمدة 4 ساعات كفاية جداً ليه." }
+                ]
+            },
+            {
+                id: 104,
+                author_name: "د. هالة رءوف",
+                author_avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80",
+                created_at: new Date(Date.now() - 3600000 * 18).toISOString(),
+                category: "تجارب زراعية",
+                content: "نباتات الظل الداخلية زي البوتس وسانسيفيريا مش بس بتدي مظهر جمالي تحفة، دي كمان بتنقي جو البيت وبتساعد على تقليل التوتر العصبي وسط الشغل المكتبي 🪴✨ #نباتات_ظل",
+                image_url: "https://images.unsplash.com/photo-1596547609652-9cf5d8d76921?auto=format&fit=crop&w=800&q=80",
+                likes: 31,
+                comments: []
+            }
+        ];
+
+        let localPosts = [...initialPosts];
+
+        // Background Particles Canvas
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        const particles = Array.from({ length: 35 }, () => ({
+            x: Math.random() * width,
+            y: Math.random() * height,
+            radius: Math.random() * 3 + 1,
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: (Math.random() - 0.5) * 0.4,
+            alpha: Math.random() * 0.5 + 0.2
+        }));
+
+        function drawBackground() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach((p, i) => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(49, 71, 49, ${p.alpha})`;
+                ctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p2 = particles[j];
+                    const dx = p.x - p2.x;
+                    const dy = p.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < 120) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(49, 71, 49, ${0.15 * (1 - dist / 120)})`;
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(drawBackground);
+        }
+        drawBackground();
+
+        // Plant Cursor
+        const plantCursor = document.getElementById('plant-cursor');
+
+// متابعة حركة الماوس على مستوى الشاشة بالكامل
+window.addEventListener('mousemove', (e) => {
+    if (plantCursor) {
+        plantCursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-20%, -20%)`;
+    }
+});
+
+// إضافة تأثير موجة النقر وإزالتها فور انتهائها لتجنب تراكم العناصر
+window.addEventListener('click', (e) => {
+    const ripple = document.createElement('div');
+    ripple.className = 'click-ripple';
+    ripple.style.left = `${e.clientX}px`;
+    ripple.style.top = `${e.clientY}px`;
+    
+    document.body.appendChild(ripple);
+
+    setTimeout(() => {
+        if (ripple && ripple.parentNode) {
+            ripple.parentNode.removeChild(ripple);
+        }
+    }, 450);
+});
+
+        // Navigation Views Switcher
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('nav-item-active'));
+
+            const targetView = document.getElementById(`view-${viewId}`);
+            if (targetView) targetView.classList.add('active');
+
+            const activeNavBtn = document.getElementById(`nav-btn-${viewId}`);
+            if (activeNavBtn) activeNavBtn.classList.add('nav-item-active');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Render Feed
+        async function renderFeed() {
+            const feed = document.getElementById('feedContainer');
+            let postsToDisplay = localPosts;
+
+            if (activeFilter !== 'ALL') {
+                postsToDisplay = postsToDisplay.filter(p => p.category === activeFilter);
+            }
+
+            if (postsToDisplay.length === 0) {
+                feed.innerHTML = `<div class="bg-card-bg/80 p-8 rounded-3xl border border-card-border text-center text-xs text-muted-text">لا توجد منشورات في هذه الفئة حالياً. كن أول من يشارك!</div>`;
+                return;
+            }
+
+            feed.innerHTML = '';
+            postsToDisplay.forEach(post => {
+                const badgeColor = post.category === 'استفسارات واحتياجات' ? 'bg-amber-500/10 text-amber-700' : 'bg-accent-green/10 text-accent-green';
+                
+                let commentsHtml = '';
+                if (post.comments && post.comments.length > 0) {
+                    post.comments.forEach(c => {
+                        commentsHtml += `
+                            <div class="bg-sidebar-bg p-2.5 rounded-xl border border-border-color text-xs">
+                                <span class="font-bold text-accent-green block mb-0.5">${c.author}</span>
+                                <span class="text-hover-green">${c.text}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                feed.innerHTML += `
+                    <div class="animated-card bg-card-bg/90 p-5 rounded-3xl border border-card-border space-y-3 shadow-sm">
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-3">
+                                ${post.author_avatar ? 
+                                    `<img src="${post.author_avatar}" class="w-10 h-10 rounded-full object-cover border border-border-color shadow-sm">` :
+                                    `<div class="w-10 h-10 rounded-full bg-accent-green text-white flex items-center justify-center font-bold text-xs shadow">${post.author_name.substring(0, 2).toUpperCase()}</div>`
+                                }
+                                <div>
+                                    <h4 class="font-bold text-xs text-accent-green">${post.author_name}</h4>
+                                    <span class="text-[10px] text-muted-text">${new Date(post.created_at).toLocaleString('ar-EG')}</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold px-3 py-1 rounded-full ${badgeColor}">${post.category || 'تجارب زراعية'}</span>
+                        </div>
+
+                        <p class="text-xs text-hover-green leading-relaxed whitespace-pre-line font-medium">${post.content}</p>
+                        
+                        ${post.image_url ? `<img src="${post.image_url}" class="rounded-2xl max-h-80 w-full object-cover border border-border-color shadow-sm">` : ''}
+
+                        <div class="flex items-center gap-6 pt-3 border-t border-card-border text-xs text-muted-text">
+                            <button onclick="likePost(${post.id})" class="hover:text-accent-green transition flex items-center gap-1.5 font-bold">
+                                <i class="fa-solid fa-heart text-red-500"></i> <span>إعجاب (${post.likes})</span>
+                            </button>
+                            <button onclick="toggleCommentBox(${post.id})" class="hover:text-accent-green transition flex items-center gap-1.5 font-bold">
+                                <i class="fa-regular fa-comment text-accent-green"></i> <span>تعليق (${post.comments ? post.comments.length : 0})</span>
+                            </button>
+                        </div>
+
+                        <div id="commentBox-${post.id}" class="space-y-2 pt-2 border-t border-card-border/60">
+                            <div class="space-y-2 max-h-48 overflow-y-auto">
+                                ${commentsHtml}
+                            </div>
+                            <div class="flex gap-2 pt-1">
+                                <input type="text" id="commentInput-${post.id}" placeholder="اكتب تعليقاً مشجعاً..." class="flex-1 bg-sidebar-bg p-2.5 rounded-xl text-xs border border-border-color focus:outline-none font-medium">
+                                <button onclick="addComment(${post.id})" class="bg-accent-green text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-hover-green transition">إرسال</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterCategory(cat, btn) {
+            activeFilter = cat;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('filter-btn-active'));
+            btn.classList.add('filter-btn-active');
+            renderFeed();
+        }
+
+        function previewPostImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedPostImage = e.target.result;
+                document.getElementById('postImagePreview').src = selectedPostImage;
+                document.getElementById('postImagePreviewContainer').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removePostImage() {
+            selectedPostImage = null;
+            document.getElementById('postImagePreviewContainer').classList.add('hidden');
+            document.getElementById('postImageInput').value = '';
+        }
+
+        function publishPost() {
+            const input = document.getElementById('postInput');
+            const categorySelect = document.getElementById('postCategory');
+            const content = input.value.trim();
+
+            if (!content && !selectedPostImage) {
+                alert('يرجى كتابة محتوى المنشور أو إرفاق صورة أولاً.');
+                return;
+            }
+
+            const newPost = {
+                id: Date.now(),
+                author_name: "عضو جديد (أنت)",
+                author_avatar: null,
+                created_at: new Date().toISOString(),
+                category: categorySelect.value,
+                content: content,
+                image_url: selectedPostImage,
+                likes: 0,
+                comments: []
+            };
+
+            localPosts.unshift(newPost);
+            input.value = '';
+            removePostImage();
+            renderFeed();
+        }
+
+        function likePost(postId) {
+            const post = localPosts.find(p => p.id === postId);
+            if (post) {
+                post.likes += 1;
+                renderFeed();
+            }
+        }
+
+        function toggleCommentBox(postId) {
+            const box = document.getElementById(`commentBox-${postId}`);
+            box.classList.toggle('hidden');
+        }
+
+        function addComment(postId) {
+            const input = document.getElementById(`commentInput-${postId}`);
+            const text = input.value.trim();
+            if (!text) return;
+
+            const post = localPosts.find(p => p.id === postId);
+            if (post) {
+                if (!post.comments) post.comments = [];
+                post.comments.push({ author: "أنت", text: text });
+                input.value = '';
+                renderFeed();
+            }
+        }
+
+        function filterFeedBySearch() {
+            const q = document.getElementById('communitySearch').value.toLowerCase();
+            const feed = document.getElementById('feedContainer');
+            const filtered = localPosts.filter(p => p.content.toLowerCase().includes(q) || p.author_name.toLowerCase().includes(q));
+            
+            if (filtered.length === 0) {
+                feed.innerHTML = `<div class="bg-card-bg/80 p-6 rounded-3xl border border-card-border text-center text-xs text-muted-text">لا توجد نتائج بحث مطابقة لـ "${q}"</div>`;
+                return;
+            }
+            localPosts = filtered;
+            renderFeed();
+            localPosts = [...initialPosts];
+        }
+
+        function searchTag(tag) {
+            document.getElementById('communitySearch').value = tag;
+            filterFeedBySearch();
+        }
+
+        function viewStory(userName, imageUrl) {
+            alert(`عرض قصة اليوم الخاصة بـ ${userName}`);
+        }
+
+        function scrollToCreatePost() {
+            document.getElementById('createPostBox').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            renderFeed();
+        });
+    </script>
+</body>
+</html>

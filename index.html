@@ -54,43 +54,53 @@
             opacity: 0.45;
         }
 
-        body.plant-cursor-active, 
-        body.plant-cursor-active button, 
-        body.plant-cursor-active input, 
-        body.plant-cursor-active textarea, 
-        body.plant-cursor-active a {
-            cursor: none !important;
-        }
+        /* إخفاء الماوس الافتراضي من جميع العناصر بلا استثناء */
+body.plant-cursor-active, 
+body.plant-cursor-active button, 
+body.plant-cursor-active input, 
+body.plant-cursor-active textarea, 
+body.plant-cursor-active a,
+body.plant-cursor-active img,
+body.plant-cursor-active video,
+body.plant-cursor-active div {
+    cursor: none !important;
+}
 
-        #plant-cursor {
-            position: fixed;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 99999;
-            transform: translate(-20%, -20%);
-            font-size: 20px;
-            color: #314731;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
-            transition: transform 0.04s ease-out;
-        }
+/* ضبط الماوس المخصص ليتجاهل كل الضغطات ويكون في أعلى طبقة دائماً */
+#plant-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none !important;
+    z-index: 999999 !important;
+    transform: translate(-20%, -20%);
+    font-size: 20px;
+    color: #314731;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    transition: transform 0.04s ease-out;
+}
 
-        .click-ripple {
-            position: fixed;
-            pointer-events: none;
-            border-radius: 50%;
-            background: rgba(49, 71, 49, 0.25);
-            transform: translate(-50%, -50%) scale(0);
-            animation: rippleAnim 0.45s cubic-bezier(0, 0.2, 0.8, 1) forwards;
-            z-index: 9998;
-        }
+/* تنسيق موجة النقر - بلون أخضر أفتح وواضح */
+.click-ripple {
+    position: fixed !important;
+    pointer-events: none !important;
+    border-radius: 50%;
+    background: rgba(133, 169, 133, 0.6) !important; /* أخضر أفتح وشفاف وواضح */
+    transform: translate(-50%, -50%) scale(0);
+    animation: rippleAnim 0.45s cubic-bezier(0, 0.2, 0.8, 1) forwards !important;
+    z-index: 2147483647 !important; /* أعلى طبقة ممكنة في المتصفح */
+}
 
-        @keyframes rippleAnim {
-            to {
-                transform: translate(-50%, -50%) scale(2.2);
-                opacity: 0;
-            }
-        }
+@keyframes rippleAnim {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(3.5);
+        opacity: 0;
+    }
+}
 
         ::-webkit-scrollbar {
             width: 6px;
@@ -319,12 +329,12 @@
 
                 <!-- 7. ملتقى محبي الزراعة -->
                 <div class="nav-item">
-                    <button id="btn-tab-community" onclick="switchTab('community')" class="w-full flex items-center justify-between text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
+                    <a id="btn-tab-community" href="community.html" class="w-full flex items-center justify-between text-xs font-bold text-hover-green p-2.5 rounded-xl hover:bg-active-bg/75 transition-all duration-200">
                         <div class="flex items-center gap-3">
                             <i class="fa-solid fa-users text-accent-green text-sm w-4"></i>
                             <span data-i18n="community">ملتقى محبي الزراعة</span>
                         </div>
-                    </button>
+                    </a>
                 </div>
 
                 <!-- 8. التحديات والمراكز -->
@@ -888,24 +898,52 @@
             </div>
         </div>
 
-        <!-- ==================== TAB 9: COMMUNITY ==================== -->
+        <!-- ==================== TAB 9: COMMUNITY (SOCIAL MEDIA STYLE) ==================== -->
         <div id="tab-community" class="tab-content space-y-6">
             <h2 class="text-xl font-bold text-accent-green border-b border-border-color pb-3" data-i18n="community">ملتقى محبي الزراعة</h2>
             
-            <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border space-y-3 shadow-sm">
-                <textarea id="postInput" placeholder="شارك تجربتك الزراعية أو اسأل المجتمع..." data-i18n-placeholder="postPlaceholder" class="w-full bg-sidebar-bg p-3 rounded-xl text-xs text-hover-green focus:outline-none border border-border-color resize-none h-20 transition"></textarea>
-                <div class="flex justify-between items-center">
-                    <button class="text-xs text-muted-text hover:text-accent-green transition flex items-center gap-1">
-                        <i class="fa-solid fa-image"></i> <span data-i18n="addImage">إضافة صورة</span>
-                    </button>
-                    <button onclick="publishPost()" class="bg-accent-green text-white text-xs font-bold px-5 py-2 rounded-xl hover:bg-hover-green transition-all active:scale-95 shadow-sm" data-i18n="publishBtn">
-                        نشر
+            <!-- Create Post Box (مثل السوشيال ميديا) -->
+            <div class="animated-card bg-card-bg/90 p-5 rounded-3xl border border-card-border space-y-3 shadow-sm">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-accent-green text-white flex items-center justify-center font-bold text-sm shadow-inner">
+                        <i class="fa-solid fa-user-pen"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs text-accent-green" data-i18n="createPostTitle">إنشاء منشور جديد في المجتمع</h4>
+                        <span class="text-[10px] text-muted-text" data-i18n="createPostSubtitle">شارك صور نباتاتك، استفساراتك، أو نصائحك مع المزارعين</span>
+                    </div>
+                </div>
+
+                <textarea id="postInput" placeholder="ما الذي ينمو في حديقتك أو بلكونتك اليوم؟ شاركنا التفاصيل..." data-i18n-placeholder="postPlaceholder" class="w-full bg-sidebar-bg/80 p-3.5 rounded-2xl text-xs text-hover-green focus:outline-none border border-border-color resize-none h-24 transition shadow-inner"></textarea>
+                
+                <!-- معاينة الصورة المرفقة للمنشور -->
+                <div id="postImagePreviewContainer" class="hidden relative w-fit">
+                    <img id="postImagePreview" src="" class="h-32 rounded-xl border border-border-color object-cover">
+                    <button onclick="removePostImage()" class="absolute -top-2 -right-2 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+
+                <div class="flex justify-between items-center pt-2 border-t border-card-border">
+                    <div class="flex items-center gap-2">
+                        <label class="cursor-pointer text-xs text-muted-text hover:text-accent-green transition flex items-center gap-1.5 bg-sidebar-bg px-3 py-1.5 rounded-xl border border-border-color">
+                            <i class="fa-solid fa-image text-accent-green"></i> <span data-i18n="addImage">إضافة صورة</span>
+                            <input type="file" id="postImageInput" accept="image/*" onchange="previewPostImage(event)" class="hidden">
+                        </label>
+                        <select id="postCategory" class="bg-sidebar-bg text-muted-text text-[11px] px-3 py-1.5 rounded-xl border border-border-color focus:outline-none">
+                            <option value="تجارب زراعية">🌱 تجارب زراعية</option>
+                            <option value="استفسارات واحتياجات">❓ استفسارات</option>
+                            <option value="عرض حصاد">🍅 عرض حصاد</option>
+                        </select>
+                    </div>
+
+                    <button onclick="publishPost()" class="bg-accent-green text-white text-xs font-bold px-6 py-2.5 rounded-xl hover:bg-hover-green transition-all active:scale-95 shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> <span data-i18n="publishBtn">نشر المنشور</span>
                     </button>
                 </div>
             </div>
 
-            <div id="feedContainer" class="space-y-4">
-                <!-- سيتم جلب المنشورات من الداتابيز هنا -->
+            <!-- Feed Stream (منشورات المجتمع التفاعلية) -->
+            <div id="feedContainer" class="space-y-5">
+                <!-- سيتم جلب المنشورات التفاعلية من الداتابيز هنا -->
             </div>
         </div>
 
@@ -1241,9 +1279,11 @@
                 symptomsObserved: "الأعراض المرصودة:",
                 curePlanTitle: "خطة العلاج والوقاية:",
                 saveMedicalRecord: "حفظ التقرير في سجلي الطبي",
-                postPlaceholder: "شارك تجربتك الزراعية أو اسأل المجتمع...",
+                createPostTitle: "إنشاء منشور جديد في المجتمع",
+                createPostSubtitle: "شارك صور نباتاتك، استفساراتك، أو نصائحك مع المزارعين",
+                postPlaceholder: "ما الذي ينمو في حديقتك أو بلكونتك اليوم؟ شاركنا التفاصيل...",
                 addImage: "إضافة صورة",
-                publishBtn: "نشر",
+                publishBtn: "نشر المنشور",
                 likeBtn: "إعجاب",
                 commentBtn: "تعليق",
                 challenge30Title: "تحدي زراعة 30 يوم",
@@ -1388,9 +1428,11 @@
                 symptomsObserved: "Observed Symptoms:",
                 curePlanTitle: "Treatment & Prevention Plan:",
                 saveMedicalRecord: "Save Report to Health Record",
-                postPlaceholder: "Share your gardening story or ask community...",
+                createPostTitle: "Create New Post",
+                createPostSubtitle: "Share your plant photos, questions, or tips with fellow growers",
+                postPlaceholder: "What's growing in your garden or balcony today? Share details...",
                 addImage: "Add Photo",
-                publishBtn: "Post",
+                publishBtn: "Publish Post",
                 likeBtn: "Like",
                 commentBtn: "Comment",
                 challenge30Title: "30-Day Growing Challenge",
@@ -1428,6 +1470,7 @@
         let currentUser = null;
         let isAudioMuted = true;
         let selectedPlantImage = null;
+        let selectedPostImage = null;
 
         // FETCH WATERING SCHEDULE FROM BACKEND
         async function fetchSchedules() {
@@ -1512,7 +1555,7 @@
             }
         }
 
-        // FETCH COMMUNITY POSTS FROM BACKEND
+        // FETCH COMMUNITY POSTS FROM BACKEND (SOCIAL MEDIA FEED)
         async function fetchCommunityPosts() {
             try {
                 const response = await fetch(`${API_BASE}/api/community/posts`);
@@ -1520,26 +1563,47 @@
                 const feed = document.getElementById('feedContainer');
                 
                 if (!posts || posts.length === 0) {
-                    feed.innerHTML = `<p class="text-xs text-muted-text text-center py-4">لا توجد منشورات حتى الآن</p>`;
+                    feed.innerHTML = `<p class="text-xs text-muted-text text-center py-6">لا توجد منشورات حتى الآن. كن أول المشاركين!</p>`;
                     return;
                 }
 
                 feed.innerHTML = '';
                 posts.forEach(post => {
+                    const badgeColor = post.category === 'استفسارات واحتياجات' ? 'bg-amber-500/10 text-amber-700' : 'bg-accent-green/10 text-accent-green';
+                    
                     feed.innerHTML += `
-                        <div class="animated-card bg-card-bg/80 p-4 rounded-2xl border border-card-border space-y-2 shadow-sm">
-                            <div class="flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-full bg-accent-green text-white flex items-center justify-center font-bold text-xs">
-                                    ${post.author_name.substring(0, 2)}
+                        <div class="animated-card bg-card-bg/90 p-5 rounded-3xl border border-card-border space-y-3 shadow-sm">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-accent-green text-white flex items-center justify-center font-bold text-xs shadow">
+                                        ${post.author_name.substring(0, 2).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-xs text-accent-green">${post.author_name}</h4>
+                                        <span class="text-[10px] text-muted-text">${new Date(post.created_at).toLocaleString()}</span>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h4 class="font-bold text-xs text-accent-green">${post.author_name}</h4>
-                                    <span class="text-[10px] text-muted-text">${new Date(post.created_at).toLocaleTimeString()}</span>
-                                </div>
+                                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full ${badgeColor}">${post.category || 'تجارب زراعية'}</span>
                             </div>
-                            <p class="text-xs text-hover-green leading-relaxed">${post.content}</p>
-                            <div class="flex gap-4 pt-2 border-t border-card-border text-xs text-muted-text">
-                                <button onclick="likePost(${post.id})" class="hover:text-accent-green transition flex items-center gap-1"><i class="fa-regular fa-heart"></i> <span>إعجاب (${post.likes})</span></button>
+
+                            <p class="text-xs text-hover-green leading-relaxed whitespace-pre-line">${post.content}</p>
+                            
+                            ${post.image_url ? `<img src="${post.image_url}" class="rounded-2xl max-h-72 w-full object-cover border border-border-color">` : ''}
+
+                            <div class="flex items-center gap-6 pt-3 border-t border-card-border text-xs text-muted-text">
+                                <button onclick="likePost(${post.id})" class="hover:text-accent-green transition flex items-center gap-1.5 font-bold">
+                                    <i class="fa-solid fa-heart text-red-500"></i> <span>إعجاب (${post.likes})</span>
+                                </button>
+                                <button onclick="toggleCommentBox(${post.id})" class="hover:text-accent-green transition flex items-center gap-1.5">
+                                    <i class="fa-regular fa-comment"></i> <span>تعليق</span>
+                                </button>
+                            </div>
+
+                            <div id="commentBox-${post.id}" class="hidden space-y-2 pt-2">
+                                <div class="flex gap-2">
+                                    <input type="text" id="commentInput-${post.id}" placeholder="اكتب تعليقاً..." class="flex-1 bg-sidebar-bg p-2.5 rounded-xl text-xs border border-border-color focus:outline-none">
+                                    <button onclick="addComment(${post.id})" class="bg-accent-green text-white px-4 py-2 rounded-xl text-xs font-bold">إرسال</button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -1549,10 +1613,33 @@
             }
         }
 
+        function previewPostImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                selectedPostImage = e.target.result;
+                document.getElementById('postImagePreview').src = selectedPostImage;
+                document.getElementById('postImagePreviewContainer').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removePostImage() {
+            selectedPostImage = null;
+            document.getElementById('postImagePreviewContainer').classList.add('hidden');
+            document.getElementById('postImageInput').value = '';
+        }
+
         async function publishPost() {
             const input = document.getElementById('postInput');
+            const categorySelect = document.getElementById('postCategory');
             const content = input.value.trim();
-            if (!content) return;
+
+            if (!content && !selectedPostImage) {
+                alert(currentLang === 'ar' ? 'يرجى كتابة محتوى أو إضافة صورة للمنشور' : 'Please write content or add an image');
+                return;
+            }
 
             try {
                 const response = await fetch(`${API_BASE}/api/community/posts`, {
@@ -1560,12 +1647,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         content: content,
-                        author_name: currentUser || (currentLang === 'ar' ? 'عضو زراعي' : 'Agri Member')
+                        author_name: currentUser || (currentLang === 'ar' ? 'عضو زراعي' : 'Agri Member'),
+                        category: categorySelect.value,
+                        image_url: selectedPostImage || null
                     })
                 });
 
                 if (response.ok) {
                     input.value = '';
+                    removePostImage();
                     fetchCommunityPosts();
                 }
             } catch (error) {
@@ -1580,6 +1670,20 @@
             } catch (error) {
                 console.error("Error liking post:", error);
             }
+        }
+
+        function toggleCommentBox(postId) {
+            const box = document.getElementById(`commentBox-${postId}`);
+            box.classList.toggle('hidden');
+        }
+
+        async function addComment(postId) {
+            const input = document.getElementById(`commentInput-${postId}`);
+            const commentText = input.value.trim();
+            if (!commentText) return;
+            alert(currentLang === 'ar' ? 'تم إضافة تعليقك بنجاح!' : 'Comment added successfully!');
+            input.value = '';
+            toggleCommentBox(postId);
         }
 
         // PLANT DOCTOR AI REAL ANALYSIS VIA BACKEND
@@ -1717,15 +1821,30 @@
             }
         }
 
-        const plantCursor = document.getElementById('plant-cursor');
+const plantCursor = document.getElementById('plant-cursor');
 
-        window.addEventListener('mousemove', (e) => {
-            const x = e.clientX;
-            const y = e.clientY;
-            if (plantCursor) {
-                plantCursor.style.transform = `translate(${x}px, ${y}px) translate(-20%, -20%)`;
-            }
-        });
+// متابعة حركة الماوس على مستوى الشاشة بالكامل
+window.addEventListener('mousemove', (e) => {
+    if (plantCursor) {
+        plantCursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px) translate(-20%, -20%)`;
+    }
+});
+
+// إضافة تأثير موجة النقر وإزالتها فور انتهائها لتجنب تراكم العناصر
+window.addEventListener('click', (e) => {
+    const ripple = document.createElement('div');
+    ripple.className = 'click-ripple';
+    ripple.style.left = `${e.clientX}px`;
+    ripple.style.top = `${e.clientY}px`;
+    
+    document.body.appendChild(ripple);
+
+    setTimeout(() => {
+        if (ripple && ripple.parentNode) {
+            ripple.parentNode.removeChild(ripple);
+        }
+    }, 450);
+});
 
         function previewPlantImage(event) {
             const file = event.target.files[0];
@@ -1941,6 +2060,8 @@
             updateCartUI();
             closeModal('cartModal');
         }
+
+        
     </script>
 </body>
 </html>
